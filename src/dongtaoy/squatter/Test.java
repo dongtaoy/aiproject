@@ -7,38 +7,11 @@ package dongtaoy.squatter;
 public class Test {
 
     public static void main(String[] args) {
+        Dongtaoy player = new Dongtaoy();
         Board board = new Board(6);
-        System.out.println(board);
-        minmax(board, 5);
+        player.init(6, 1);
+        System.out.println(player.minimax(board, 8, Integer.MIN_VALUE, Integer.MAX_VALUE, true).getValue());
 
     }
 
-    public static void minmax(Board board, int depth) {
-
-        char player;
-        if (depth == 0)
-            return;
-
-        if (depth % 2 == 0) {
-            player = '1';
-            for (Cell cell : board.getAvaliableCells()) {
-                Board newBoard = new Board(board, cell, player);
-                int value = eval(board);
-                minmax(newBoard, depth - 1);
-            }
-        }
-        else {
-            player = '2';
-            for (Cell cell : board.getAvaliableCells()) {
-                Board newBoard = new Board(board, cell, player);
-                int value = eval(board);
-                minmax(newBoard, depth - 1);
-            }
-        }
-
-
-    }
-    public static int eval(Board board){
-        return 1;
-    }
 }
