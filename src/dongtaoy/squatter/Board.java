@@ -1,5 +1,7 @@
 package dongtaoy.squatter;
 
+import aiproj.squatter.Move;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
@@ -25,7 +27,7 @@ public class Board {
         // Store cell in cell object;
         for (int i = 0; i < this.dimension; i++)
             for (int j = 0; j < this.dimension; j++)
-                cells[i][j] = new Cell(contents[i][j]);
+                cells[i][j] = new Cell(contents[i][j], i, j);
     }
 
     public Board(int dimension) {
@@ -33,7 +35,7 @@ public class Board {
         this.cells = new Cell[this.dimension][this.dimension];
         for (int i = 0; i < this.dimension; i++)
             for (int j = 0; j < this.dimension; j++)
-                cells[i][j] = new Cell('0');
+                cells[i][j] = new Cell('0', i, j);
     }
 
     public Board(Board board, Cell cell, char player) {
@@ -42,9 +44,9 @@ public class Board {
         for (int i = 0; i < this.dimension; i++) {
             for (int j = 0; j < this.dimension; j++) {
                 if (board.getCells()[i][j].equals(cell))
-                    this.cells[i][j] = new Cell(player);
+                    this.cells[i][j] = new Cell(player, i, j);
                 else
-                    this.cells[i][j] = new Cell(board.getCells()[i][j].getContent());
+                    this.cells[i][j] = new Cell(board.getCells()[i][j].getContent(), i, j);
             }
         }
     }
@@ -103,6 +105,11 @@ public class Board {
             stringBuilder.append("\n");
         }
         return stringBuilder.toString();
+    }
+
+    public int placeCell(Move move) {
+        cells[move.Row][move.Col] = new Cell(move.P == 1 ? 'W' : 'B', move.Row, move.Col);
+        return 1;
     }
 
 

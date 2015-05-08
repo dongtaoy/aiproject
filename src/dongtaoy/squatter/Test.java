@@ -10,7 +10,7 @@ public class Test {
         Dongtaoy player = new Dongtaoy();
         Board board = new Board(6);
         player.init(6, 1);
-        System.out.println(player.minimax(board, 8, Integer.MIN_VALUE, Integer.MAX_VALUE, true).getValue());
+        System.out.println(player.minimax(board, null, 5, Integer.MIN_VALUE, Integer.MAX_VALUE, true).getValue());
 
     }
 

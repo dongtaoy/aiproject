@@ -1,5 +1,6 @@
 package aiproj.squatter;
 
+import dongtaoy.squatter.*;
 /*   
  *   Referee:
  *      A mediator between two players. It is responsible to initialize 

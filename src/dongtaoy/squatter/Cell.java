@@ -8,9 +8,22 @@ import aiproj.squatter.Piece;
 public class Cell {
     private char content;
     private char capturedBy;
+    private int row;
 
-    public Cell(char content){
+    public int getRow() {
+        return row;
+    }
+
+    public int getCol() {
+        return col;
+    }
+
+    private int col;
+
+    public Cell(char content, int row, int col){
         this.content = content;
+        this.row = row;
+        this.col = col;
     }
 
     public char getContent() {
@@ -31,5 +44,9 @@ public class Cell {
 
     public boolean isEmpty(){
         return content == Character.forDigit(Piece.EMPTY, 10);
+    }
+
+    public String toString() {
+        return row + ", " + col + ": " + content;
     }
 }
