@@ -9,31 +9,36 @@ public class Test {
     public static void main(String[] args) {
         Board board = new Board(6);
         System.out.println(board);
-        Node<Board> root = new Node<>(board);
-        minmax(root, 5);
+        minmax(board, 5);
 
     }
 
-    public static void minmax(Node node, int depth) {
+    public static void minmax(Board board, int depth) {
 
-        Board board = (Board) node.getData();
         char player;
-
         if (depth == 0)
             return;
 
-        if (depth % 2 == 0)
+        if (depth % 2 == 0) {
             player = '1';
-        else
-            player = '2';
-
-        System.out.println(board.getAvaliableCells().size());
-        for (Cell cell : board.getAvaliableCells()) {
-            Board newBoard = new Board(board, cell, player);
-            Node<Board> newNode = new Node<>(newBoard);
-            node.addChild(newNode);
-//            System.out.println(newBoard);
-            minmax(newNode, depth - 1);
+            for (Cell cell : board.getAvaliableCells()) {
+                Board newBoard = new Board(board, cell, player);
+                int value = eval(board);
+                minmax(newBoard, depth - 1);
+            }
         }
+        else {
+            player = '2';
+            for (Cell cell : board.getAvaliableCells()) {
+                Board newBoard = new Board(board, cell, player);
+                int value = eval(board);
+                minmax(newBoard, depth - 1);
+            }
+        }
+
+
+    }
+    public static int eval(Board board){
+        return 1;
     }
 }
