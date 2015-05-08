@@ -1,5 +1,7 @@
 package dongtaoy.squatter;
 
+import aiproj.squatter.Piece;
+
 /**
  * Created by dongtao on 3/25/2015.
  */
@@ -28,6 +30,6 @@ public class Cell {
     }
 
     public boolean isEmpty(){
-        return content == '+';
+        return content == Character.forDigit(Piece.EMPTY, 10);
     }
 }
