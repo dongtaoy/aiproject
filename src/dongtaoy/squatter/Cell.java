@@ -26,4 +26,8 @@ public class Cell {
     public void setCapturedBy(char capturedBy) {
         this.capturedBy = capturedBy;
     }
+
+    public boolean isEmpty(){
+        return content == '+';
+    }
 }

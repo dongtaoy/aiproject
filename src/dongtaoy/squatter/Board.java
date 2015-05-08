@@ -1,4 +1,7 @@
 package dongtaoy.squatter;
+
+import java.util.ArrayList;
+
 /**
  * Created by dongtao on 3/25/2015.
  */
@@ -20,6 +23,27 @@ public class Board {
         for(int i = 0; i < this.dimension ; i++)
             for(int j = 0; j < this.dimension ; j++)
                 cells[i][j] = new Cell(contents[i][j]);
+    }
+
+    public Board(int dimension){
+        this.dimension = dimension;
+        this.cells = new Cell[this.dimension][this.dimension];
+        for(int i = 0; i < this.dimension ; i++)
+            for(int j = 0 ; j < this.dimension ;j++)
+                cells[i][j] = new Cell('+');
+    }
+
+    public Board(Board board, Cell cell, char player){
+        this.dimension = board.getDimension();
+        this.cells = new Cell[this.dimension][this.dimension];
+        for(int i = 0; i < this.dimension ; i++){
+            for(int j = 0 ; j < this.dimension ; j ++){
+                if(board.getCells()[i][j].equals(cell))
+                    this.cells[i][j] = new Cell(player);
+                else
+                    this.cells[i][j] = new Cell(board.getCells()[i][j].getContent());
+            }
+        }
     }
 
     /**
@@ -77,4 +101,21 @@ public class Board {
         return stringBuilder.toString();
     }
 
+
+    public ArrayList<Cell> getEmptyCell(){
+        ArrayList<Cell> value = new ArrayList<Cell>();
+        for(int i = 0; i < this.dimension ; i++)
+            for(int j = 0 ; j < this.dimension ;j++)
+                if (cells[i][j].isEmpty())
+                    value.add(cells[i][j]);
+        return value;
+    }
+
+    public int getDimension() {
+        return dimension;
+    }
+
+    public Cell[][] getCells() {
+        return cells;
+    }
 }
