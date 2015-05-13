@@ -19,6 +19,8 @@ public class Board {
     private int dimension;
     private Cell[][] cells;
 
+    private boolean DEBUG = true;
+
     /**
      * Create Board object
      *
@@ -103,11 +105,11 @@ public class Board {
 //        }
 //        // if finished print who wins or a draw
 //        if (isFinished)
-//            //System.out.println(blackCaptured > whiteCaptured ? "Black" : (blackCaptured == whiteCaptured ? "Draw" : "White"));
+//            //if(DEBUG){System.out.println(blackCaptured > whiteCaptured ? "Black" : (blackCaptured == whiteCaptured ? "Draw" : "White"));
 //        else
-//            //System.out.println("None");
-//        //System.out.println(whiteCaptured);
-//        //System.out.println(blackCaptured);
+//            //if(DEBUG){System.out.println("None");
+//        //if(DEBUG){System.out.println(whiteCaptured);
+//        //if(DEBUG){System.out.println(blackCaptured);
 //
 //    }
 
@@ -142,12 +144,16 @@ public class Board {
                     Integer[] array = new Integer[]{Piece.WHITE, Piece.BLACK, Piece.DEAD, Piece.EMPTY};
                     HashSet<Integer> validList = new HashSet<>(Arrays.asList(array));
                     HashSet<Cell> visited = new HashSet<>();
-                    //System.out.printf("\n\ncurrent: (%d, %d)\n", currentCell.getRow(), currentCell.getCol());
+                    if(DEBUG){
+                        System.out.printf("\n\ncurrent: (%d, %d)\n", currentCell.getRow(), currentCell.getCol());
+                    }
 
                     if (currentCell.getPiece() == Piece.EMPTY || currentCell.getPiece() == Piece.DEAD) {
                         ArrayList<Cell> surroundedCells = getSurroundedCell(this.cells[i][j], new HashSet<Cell>(), validList);
                         boolean isBlack = false, isWhite = false;
-                        //System.out.println("empty cell first surround: " + surroundedCells);
+                        if(DEBUG){
+                            System.out.println("empty cell first surround: " + surroundedCells);
+                        }
                         for (Cell cell : surroundedCells) {
                             if (cell.getPiece() == Piece.BLACK)
                                 isBlack = true;
@@ -161,11 +167,15 @@ public class Board {
                             if (isWhite) {
                                 validList.remove(Piece.WHITE);
                             }
-                            //System.out.println("VALIDLIST: " + validList);
+                            if(DEBUG){
+                                System.out.println("VALIDLIST: " + validList);
+                            }
 
                             if (dfs(visited, currentCell, validList)) {
                                 currentCell.setPiece(Piece.DEAD);
-                                //System.out.printf("answer: (%d, %d)\n", i, j);
+                                if(DEBUG){
+                                    System.out.printf("answer: (%d, %d)\n", i, j);
+                                }
 
                             }
                         }
@@ -179,10 +189,14 @@ public class Board {
                                 validList.remove(Piece.BLACK);
                                 break;
                         }
-                        //System.out.println("VALIDLIST: " + validList);
+                        if(DEBUG){
+                            System.out.println("VALIDLIST: " + validList);
+                        }
                         if (dfs(visited, currentCell, validList)) {
                             currentCell.setPiece(Piece.DEAD);
-                            //System.out.printf("answer: (%d, %d)\n", i, j);
+                            if(DEBUG){
+                                System.out.printf("answer: (%d, %d)\n", i, j);
+                            }
                         }
                     }
                 }
@@ -196,8 +210,10 @@ public class Board {
         visited.add(current);
 
         ArrayList<Cell> surroundedCells = this.getSurroundedCell(current, visited, validList);
-        //System.out.println("surround" +surroundedCells);
-        //System.out.println("visted" + visited);
+        if(DEBUG){
+            System.out.println("surround" +surroundedCells);
+            System.out.println("visted" + visited);
+        }
         if (surroundedCells.size() == 0) {
             return true;
         }
@@ -232,8 +248,11 @@ public class Board {
         int row = cell.getRow();
         int col = cell.getCol();
 
-        //System.out.printf("in surrounded cell: %d, %d\n", cell.getRow(), cell.getCol());
-        //System.out.println("in surrounded visited" + visited);
+        if(DEBUG){
+            System.out.printf("in surrounded cell: %d, %d\n", cell.getRow(), cell.getCol());
+            System.out.println("in surrounded visited" + visited);
+        }
+
         //TOP
         if ((row - 1) >= 0)
             if (validList.contains(this.cells[row - 1][col].getPiece()))
@@ -350,38 +369,75 @@ public class Board {
 
     public int evaluate(Player player) {
 
-
         for (int i = 0; i < this.dimension; i++) {
             for (int j = 0; j < this.dimension; j++) {
-                if(this.cells[i][j].getPiece() != Piece.EMPTY) {
-                    // if border
-                    if (i == 0 || i == (this.dimension - 1) ||
-                            j == 0 || j == (this.dimension - 1)) {
-
-                    }
-                }
-
+                HashMap<String, Cell> cellSet = this.getConnectedCell(this.cells[i][j]);
+//                cellSet.values()
             }
         }
+
+        return 1;
+    }
+
+    private HashMap<String, Cell> getConnectedCell(Cell currentCell) {
+        HashMap<String, Cell> cellSet = new HashMap<>();
+        int row = currentCell.getRow();
+        int col = currentCell.getCol();
+
+        // TopLeft
+        if (row - 1 >= 0 && col - 1 >= 0) {
+            cellSet.put("TopLeft", this.cells[row - 1][col - 1]);
+        }
+        //TopMiddle
+        if (row - 1 >= 0) {
+            cellSet.put("TopMiddle", this.cells[row - 1][col]);
+        }
+        //TopRight
+        if (row - 1 >= 0 && col + 1 < this.dimension) {
+            cellSet.put("TopRight", this.cells[row - 1][col + 1]);
+        }
+        //MiddleLeft
+        if (col - 1 >= 0) {
+            cellSet.put("MiddleLeft", this.cells[row][col - 1]);
+        }
+        //MiddleRight
+        if (col + 1 < this.dimension) {
+            cellSet.put("MiddleRight", this.cells[row][col + 1]);
+        }
+        //BottomLeft
+        if (row + 1 < this.dimension && col - 1 >= 0) {
+            cellSet.put("BottomLeft", this.cells[row + 1][col - 1]);
+        }
+        //BottomMiddle
+        if (row + 1 < this.dimension) {
+            cellSet.put("BottomMiddle", this.cells[row + 1][col]);
+        }
+        //BottomRight
+        if (row + 1 < this.dimension && col + 1 < this.dimension) {
+            cellSet.put("BottomRight", this.cells[row + 1][col + 1]);
+        }
+        return cellSet;
+
+    }
 
 
 //        for (int i=0; i < this.dimension;i++){
 //            for (int j=0; j<this.dimension;j++){
 //                if(this.getCells()[i][j].getPiece() == Piece.EMPTY){
-//                    System.out.print(this.getCells()[i][j]);
+//                    if(DEBUG){System.out.print(this.getCells()[i][j]);
 //                }else{
-//                    System.out.print(" ");
+//                    if(DEBUG){System.out.print(" ");
 //                }
 //            }
-//            System.out.print("\n");
+//            if(DEBUG){System.out.print("\n");
 //        }
-        // Number of Piece with your player that connected with empty spot -> Increase Evaluation Value
-        // Number of Opponent piece associated with the empty spot -> Decrease Evaluation Value
-        // Boarder with less possible connection for next move -> Decrease Evaluation Value
-        // Occupy a piece on the empty piece after check with findLoop(), find the available "-" opportunity ->Increase Evaluation Value
-        // 
-        return 1;
-    }
+    // Number of Piece with your player that connected with empty spot -> Increase Evaluation Value
+    // Number of Opponent piece associated with the empty spot -> Decrease Evaluation Value
+    // Boarder with less possible connection for next move -> Decrease Evaluation Value
+    // Occupy a piece on the empty piece after check with findLoop(), find the available "-" opportunity ->Increase Evaluation Value
+    //
+//        return 1;
+//    }
 
 
     public int getDimension() {
