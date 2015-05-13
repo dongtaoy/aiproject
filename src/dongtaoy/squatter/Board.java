@@ -19,7 +19,7 @@ public class Board {
     private int dimension;
     private Cell[][] cells;
 
-    private boolean DEBUG = true;
+    private boolean DEBUG = false;
 
     /**
      * Create Board object
@@ -367,56 +367,59 @@ public class Board {
     }
 
     public int evaluate(Player player) {
-
+        int connectivity = 0;
         for (int i = 0; i < this.dimension; i++) {
             for (int j = 0; j < this.dimension; j++) {
-                HashMap<String, Cell> cellSet = this.getConnectedCell(this.cells[i][j]);
-//                cellSet.values()
+//                int connectivity = 0;
+                HashMap<String, Integer> cellSet = this.getConnectedCell(this.cells[i][j]);
+                for(int value: cellSet.values())
+                    if (value == Piece.EMPTY)
+                        connectivity++;
+                System.out.println(connectivity);
             }
         }
 
         return 1;
     }
 
-    private HashMap<String, Cell> getConnectedCell(Cell currentCell) {
-        HashMap<String, Cell> cellSet = new HashMap<>();
+    private HashMap<String, Integer> getConnectedCell(Cell currentCell) {
+        HashMap<String, Integer> cellSet = new HashMap<>();
         int row = currentCell.getRow();
         int col = currentCell.getCol();
 
         // TopLeft
         if (row - 1 >= 0 && col - 1 >= 0) {
-            cellSet.put("TopLeft", this.cells[row - 1][col - 1]);
+            cellSet.put("TopLeft", this.cells[row - 1][col - 1].getPiece());
         }
         //TopMiddle
         if (row - 1 >= 0) {
-            cellSet.put("TopMiddle", this.cells[row - 1][col]);
+            cellSet.put("TopMiddle", this.cells[row - 1][col].getPiece());
         }
         //TopRight
         if (row - 1 >= 0 && col + 1 < this.dimension) {
-            cellSet.put("TopRight", this.cells[row - 1][col + 1]);
+            cellSet.put("TopRight", this.cells[row - 1][col + 1].getPiece());
         }
         //MiddleLeft
         if (col - 1 >= 0) {
-            cellSet.put("MiddleLeft", this.cells[row][col - 1]);
+            cellSet.put("MiddleLeft", this.cells[row][col - 1].getPiece());
         }
         //MiddleRight
         if (col + 1 < this.dimension) {
-            cellSet.put("MiddleRight", this.cells[row][col + 1]);
+            cellSet.put("MiddleRight", this.cells[row][col + 1].getPiece());
         }
         //BottomLeft
         if (row + 1 < this.dimension && col - 1 >= 0) {
-            cellSet.put("BottomLeft", this.cells[row + 1][col - 1]);
+            cellSet.put("BottomLeft", this.cells[row + 1][col - 1].getPiece());
         }
         //BottomMiddle
         if (row + 1 < this.dimension) {
-            cellSet.put("BottomMiddle", this.cells[row + 1][col]);
+            cellSet.put("BottomMiddle", this.cells[row + 1][col].getPiece());
         }
         //BottomRight
         if (row + 1 < this.dimension && col + 1 < this.dimension) {
-            cellSet.put("BottomRight", this.cells[row + 1][col + 1]);
+            cellSet.put("BottomRight", this.cells[row + 1][col + 1].getPiece());
         }
         return cellSet;
-
     }
 
 
