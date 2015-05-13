@@ -148,7 +148,7 @@ public class Board {
                         System.out.printf("\n\ncurrent: (%d, %d)\n", currentCell.getRow(), currentCell.getCol());
                     }
 
-                    if (currentCell.getPiece() == Piece.EMPTY || currentCell.getPiece() == Piece.DEAD) {
+                    if (currentCell.getPiece() == Piece.EMPTY) {
                         ArrayList<Cell> surroundedCells = getSurroundedCell(this.cells[i][j], new HashSet<Cell>(), validList);
                         boolean isBlack = false, isWhite = false;
                         if (DEBUG) {
