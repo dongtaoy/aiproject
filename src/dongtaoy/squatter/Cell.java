@@ -14,6 +14,7 @@ public class Cell {
     private int col;
     private int piece;
     private int status;
+    private int capturedBy;
 
     public int getRow() {
         return row;
@@ -49,6 +50,14 @@ public class Cell {
 
     public boolean isEmpty(){
         return this.piece == Piece.EMPTY;
+    }
+
+    public int getCapturedBy() {
+        return capturedBy;
+    }
+
+    public void setCapturedBy(int capturedBy) {
+        this.capturedBy = capturedBy;
     }
 
     public String toString() {

@@ -7,6 +7,7 @@ import com.sun.deploy.uitoolkit.impl.fx.ui.MixedCodeInSwing;
 
 import java.awt.image.AreaAveragingScaleFilter;
 import java.lang.reflect.Array;
+import java.security.Permission;
 import java.util.*;
 
 /**
@@ -74,44 +75,47 @@ public class Board {
         }
     }
 
+
     /**
      * Check win for this board
      */
-//    public void checkWin() {
-//        int whiteCaptured = 0;
-//        int blackCaptured = 0;
-//        boolean isFinished = true;
-//
-//        for (int i = 0; i < this.dimension; i++) {
-//            for (int j = 0; j < this.dimension; j++) {
-//                // if cell is captured
-//                if (cells[i][j].getPiece() == '-') {
-//                    // if the previous cell is captured
-//                    if (cells[i][j - 1].getPiece() != '-')
-//                        cells[i][j].setCapturedBy(cells[i][j - 1].getPiece());
-//                    else
-//                        cells[i][j].setCapturedBy(cells[i][j - 1].getCapturedBy());
-//
-//                    // increment counter
-//                    if (cells[i][j].getCapturedBy() == 'W')
-//                        whiteCaptured++;
-//                    else
-//                        blackCaptured++;
-//                } else if (cells[i][j].getPiece() == '+') {
-//                    // if there is any '+' in cell, game is not finished
-//                    isFinished = false;
-//                }
-//            }
-//        }
-//        // if finished print who wins or a draw
+    public HashMap<String, Integer> checkWin(Dongtaoy player) {
+        int ownsideCaptured = 0;
+        int opponentCaptured = 0;
+        int isFinished = 1;
+
+        for (int i = 0; i < this.dimension; i++) {
+            for (int j = 0; j < this.dimension; j++) {
+                // if cell is captured
+                if (cells[i][j].getStatus() == Piece.DEAD) {
+                    // if the previous cell is captured
+                    if (cells[i][j - 1].getStatus() != Piece.DEAD)
+                        cells[i][j].setCapturedBy(cells[i][j - 1].getPiece());
+                    else
+                        cells[i][j].setCapturedBy(cells[i][j - 1].getCapturedBy());
+
+                    // increment counter
+                    if (cells[i][j].getCapturedBy() == player.getPiece())
+                        ownsideCaptured++;
+                    else
+                        opponentCaptured++;
+                } else if (cells[i][j].getPiece() == Piece.EMPTY) {
+                    // if there is any '+' in cell, game is not finished
+                    isFinished = 0;
+                }
+            }
+        }
+        // if finished print who wins or a draw
 //        if (isFinished)
-//            //if(DEBUG){System.out.println(blackCaptured > whiteCaptured ? "Black" : (blackCaptured == whiteCaptured ? "Draw" : "White"));
+//            System.out.println(ownsideCaptured > opponentCaptured ? player.getPiece() :
+//                    (ownsideCaptured == opponentCaptured ? "Draw" : player.getOpponentPiece()));
 //        else
-//            //if(DEBUG){System.out.println("None");
-//        //if(DEBUG){System.out.println(whiteCaptured);
-//        //if(DEBUG){System.out.println(blackCaptured);
-//
-//    }
+        HashMap<String, Integer> result = new HashMap<>();
+        result.put("Ownside", ownsideCaptured);
+        result.put("Opponent", opponentCaptured);
+        result.put("IsFinished", isFinished);
+        return result;
+    }
 
     /**
      * toString function for Board
@@ -315,7 +319,7 @@ public class Board {
         return this.transposeDown().horizontalFlip().verticalFlip();
     }
 
-    public ArrayList<Cell> getAvaliableCells() {
+    public ArrayList<Cell> getAvailableCells() {
         ArrayList<Cell> values = this.getEmptyCell();
         ArrayList<Cell> temp = new ArrayList<>();
         int x;
@@ -366,70 +370,90 @@ public class Board {
     }
 
     public int evaluate(Dongtaoy player) {
-        int ownsideConnect = 0;
-        int opponentConnect = 0;
-        int opposite = player.getOpponentPiece();
+        HashSet<Cell> ownsideConnect = new HashSet<>();
+        HashSet<Cell> opponentConnect = new HashSet<>();
         int border = 0;
         for (int i = 0; i < this.dimension; i++) {
             for (int j = 0; j < this.dimension; j++) {
                 Cell currentCell = this.cells[i][j];
 
                 //Find empty border cell
-                if( (i == 0) || (i == this.dimension - 1) || (j == 0) || (j == this.dimension))
+                if ((i == 0) || (i == this.dimension - 1) || (j == 0) || (j == this.dimension - 1))
                     if (currentCell.getPiece() == Piece.EMPTY)
                         border++;
 
 
                 //Find the connectivity of each cell
-                HashMap<String, Integer> cellSet = this.getConnectedCell(currentCell);
-                if(player.getPiece() == currentCell.getPiece()){
-                    for(int value: cellSet.values())
-                        if (value == Piece.EMPTY)
-                            ownsideConnect++;
+                HashMap<String, Cell> cellSet = this.getConnectedCell(currentCell);
+                if (player.getPiece() == currentCell.getPiece()) {
+                    for (Cell cell : cellSet.values())
+                        if (cell.getPiece() == Piece.EMPTY)
+                            ownsideConnect.add(cell);
+
+                } else if (player.getOpponentPiece() == currentCell.getPiece()) {
+                    for (Cell cell : cellSet.values())
+                        if (cell.getPiece() == Piece.EMPTY)
+                            opponentConnect.add(cell);
                 }
-//                    System.out.println();
             }
         }
+
+        //Find the minus for my side
+        this.findCycle();
+        HashMap<String, Integer> capctureResult = this.checkWin(player);
+
+//        if (DEBUG){
+        System.out.println("----EVALUATION FUNCTION DEBUG----");
+//        System.out.printf("Ownside's piece: %10s\n", player.getPiece());
+        System.out.printf("Ownside's connectivity: %4d\n", ownsideConnect.size());
+        System.out.printf("Opponent's connectivity: %3d\n", opponentConnect.size());
+        System.out.printf("# of empty cell onBorder: %d\n", border);
+        System.out.printf("Ownside's capture point: %2d\n", capctureResult.get("Ownside"));
+        System.out.printf("Opponent's capture point: %d\n", capctureResult.get("Opponent"));
+        System.out.printf("Is game finished? %13s\n", (capctureResult.get("IsFinished")==1?"TRUE":"FALSE"));
+        System.out.println("---------------------------------");
+//        }
+
 
         return 1;
     }
 
-    private HashMap<String, Integer> getConnectedCell(Cell currentCell) {
-        HashMap<String, Integer> cellSet = new HashMap<>();
+    private HashMap<String, Cell> getConnectedCell(Cell currentCell) {
+        HashMap<String, Cell> cellSet = new HashMap<>();
         int row = currentCell.getRow();
         int col = currentCell.getCol();
 
         // TopLeft
         if (row - 1 >= 0 && col - 1 >= 0) {
-            cellSet.put("TopLeft", this.cells[row - 1][col - 1].getPiece());
+            cellSet.put("TopLeft", this.cells[row - 1][col - 1]);
         }
         //TopMiddle
         if (row - 1 >= 0) {
-            cellSet.put("TopMiddle", this.cells[row - 1][col].getPiece());
+            cellSet.put("TopMiddle", this.cells[row - 1][col]);
         }
         //TopRight
         if (row - 1 >= 0 && col + 1 < this.dimension) {
-            cellSet.put("TopRight", this.cells[row - 1][col + 1].getPiece());
+            cellSet.put("TopRight", this.cells[row - 1][col + 1]);
         }
         //MiddleLeft
         if (col - 1 >= 0) {
-            cellSet.put("MiddleLeft", this.cells[row][col - 1].getPiece());
+            cellSet.put("MiddleLeft", this.cells[row][col - 1]);
         }
         //MiddleRight
         if (col + 1 < this.dimension) {
-            cellSet.put("MiddleRight", this.cells[row][col + 1].getPiece());
+            cellSet.put("MiddleRight", this.cells[row][col + 1]);
         }
         //BottomLeft
         if (row + 1 < this.dimension && col - 1 >= 0) {
-            cellSet.put("BottomLeft", this.cells[row + 1][col - 1].getPiece());
+            cellSet.put("BottomLeft", this.cells[row + 1][col - 1]);
         }
         //BottomMiddle
         if (row + 1 < this.dimension) {
-            cellSet.put("BottomMiddle", this.cells[row + 1][col].getPiece());
+            cellSet.put("BottomMiddle", this.cells[row + 1][col]);
         }
         //BottomRight
         if (row + 1 < this.dimension && col + 1 < this.dimension) {
-            cellSet.put("BottomRight", this.cells[row + 1][col + 1].getPiece());
+            cellSet.put("BottomRight", this.cells[row + 1][col + 1]);
         }
         return cellSet;
     }

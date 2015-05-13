@@ -47,7 +47,7 @@ public class Dongtaoy implements Player {
     }
 
     public Pair<Integer, Cell> minimax(Board board, Cell move, int depth, int alpha, int beta, boolean isMax) {
-        ArrayList<Cell> avaliableCells = board.getAvaliableCells();
+        ArrayList<Cell> avaliableCells = board.getAvailableCells();
         if (depth == 0 || avaliableCells.size() == 0) {
             return new Pair<>(board.evaluate(this), move);
         }
