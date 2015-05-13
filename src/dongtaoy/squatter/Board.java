@@ -118,7 +118,7 @@ public class Board {
      *
      * @return String representation of a board
      */
-    public String toString() {
+    public String boardToString() {
         StringBuilder stringBuilder = new StringBuilder();
         for (Cell[] row : this.cells) {
             for (Cell c : row) {
@@ -130,6 +130,19 @@ public class Board {
         return stringBuilder.toString();
     }
 
+    public String statusToString() {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (Cell[] row : this.cells) {
+            for (Cell c : row) {
+                stringBuilder.append(c.statusToString());
+                stringBuilder.append(" ");
+            }
+            stringBuilder.append("\n");
+        }
+        return stringBuilder.toString();
+    }
+
+
     public int placeCell(Move move) {
         cells[move.Row][move.Col] = new Cell(move.P, move.Row, move.Col);
         return 1;
@@ -140,10 +153,11 @@ public class Board {
             for (int j = 1; j < this.dimension - 1; j++) {
 
                 Cell currentCell = this.cells[i][j];
-                if (currentCell.getPiece() != Piece.DEAD) {
+                if (currentCell.getStatus() != Piece.DEAD) {
                     Integer[] array = new Integer[]{Piece.WHITE, Piece.BLACK, Piece.DEAD, Piece.EMPTY};
                     HashSet<Integer> validList = new HashSet<>(Arrays.asList(array));
                     HashSet<Cell> visited = new HashSet<>();
+
                     if (DEBUG) {
                         System.out.printf("\n\ncurrent: (%d, %d)\n", currentCell.getRow(), currentCell.getCol());
                     }
@@ -152,7 +166,7 @@ public class Board {
                         ArrayList<Cell> surroundedCells = getSurroundedCell(this.cells[i][j], new HashSet<Cell>(), validList);
                         boolean isBlack = false, isWhite = false;
                         if (DEBUG) {
-                            System.out.println("empty cell first surround: " + surroundedCells);
+                            System.out.println("Empty cell surrounded by: " + surroundedCells);
                         }
                         for (Cell cell : surroundedCells) {
                             if (cell.getPiece() == Piece.BLACK)
@@ -167,23 +181,12 @@ public class Board {
                             if (isWhite) {
                                 validList.remove(Piece.WHITE);
                             }
-                            if (DEBUG) {
-                                System.out.println("VALIDLIST: " + validList);
-                            }
-                            visited = dfs(visited, currentCell, validList);
-                            if (!isOnBoarder(visited)) {
-                                for(Cell cell : visited) {
-                                    cell.setPiece(Piece.DEAD);
+                            if (!findPathToBorder(visited, currentCell, validList)) {
+                                for (Cell cell : visited) {
+                                    cell.setStatus(Piece.DEAD);
                                 }
                             }
 
-//                            if (dfs(visited, currentCell, validList)) {
-//                                currentCell.setPiece(Piece.DEAD);
-//                                if(DEBUG){
-//                                    System.out.printf("answer: (%d, %d)\n", i, j);
-//                                }
-//
-//                            }
                         }
 
                     } else {
@@ -195,22 +198,12 @@ public class Board {
                                 validList.remove(Piece.BLACK);
                                 break;
                         }
-                        if (DEBUG) {
-                            System.out.println("VALIDLIST: " + validList);
-                        }
-                        visited = dfs(visited, currentCell, validList);
-                        if (!isOnBoarder(visited)) {
-                            for(Cell cell : visited) {
-                                cell.setPiece(Piece.DEAD);
+                        if (!findPathToBorder(visited, currentCell, validList)) {
+                            for (Cell cell : visited) {
+                                cell.setStatus(Piece.DEAD);
                             }
                         }
 
-//                        if (dfs(visited, currentCell, validList)) {
-//                            currentCell.setPiece(Piece.DEAD);
-//                            if(DEBUG){
-//                                System.out.printf("answer: (%d, %d)\n", i, j);
-//                            }
-//                        }
                     }
                 }
             }
@@ -218,32 +211,37 @@ public class Board {
 
     }
 
-    private HashSet<Cell> dfs(HashSet<Cell> visited, Cell current, HashSet<Integer> validList) {
-
+    private boolean findPathToBorder(HashSet<Cell> visited, Cell current, HashSet<Integer> validList) {
+        if (isOnBorder(current))
+            return true;
         visited.add(current);
         ArrayList<Cell> surroundedCells = this.getSurroundedCell(current, visited, validList);
         if (DEBUG) {
-            System.out.println("surround" + surroundedCells);
-            System.out.println("visted" + visited);
-        }
-        if (surroundedCells.size() == 0) {
-            return visited;
+            System.out.println("in findPathToBorder");
+            System.out.println("\tcurrent" + current.getCoordinates() + ": " + current);
         }
 
         for (Cell cell : surroundedCells) {
-            visited.addAll(dfs(visited, cell, validList));
-        }
-        return visited;
-    }
-
-    private boolean isOnBoarder(Collection<Cell> cells) {
-        for (Cell cell : cells) {
-            if (cell.getRow() == 0 ||
-                    cell.getRow() == (this.dimension - 1) ||
-                    cell.getCol() == 0 ||
-                    cell.getCol() == (this.dimension - 1))
+            if (findPathToBorder(visited, cell, validList))
                 return true;
         }
+        return false;
+    }
+
+    private boolean isOnBorder(Collection<Cell> cells) {
+        for (Cell cell : cells) {
+            if (isOnBorder(cell))
+                return true;
+        }
+        return false;
+    }
+
+    private boolean isOnBorder(Cell cell) {
+        if (cell.getRow() == 0 ||
+                cell.getRow() == (this.dimension - 1) ||
+                cell.getCol() == 0 ||
+                cell.getCol() == (this.dimension - 1))
+            return true;
         return false;
     }
 
@@ -252,11 +250,6 @@ public class Board {
         ArrayList<Cell> cells = new ArrayList<>();
         int row = cell.getRow();
         int col = cell.getCol();
-
-        if (DEBUG) {
-            System.out.printf("in surrounded cell: %d, %d\n", cell.getRow(), cell.getCol());
-            System.out.println("in surrounded visited" + visited);
-        }
 
         //TOP
         if ((row - 1) >= 0)
@@ -378,7 +371,7 @@ public class Board {
             for (int j = 0; j < this.dimension; j++) {
 //                int connectivity = 0;
                 HashMap<String, Integer> cellSet = this.getConnectedCell(this.cells[i][j]);
-                for(int value: cellSet.values())
+                for (int value : cellSet.values())
                     if (value == Piece.EMPTY)
                         connectivity++;
                 System.out.println(connectivity);

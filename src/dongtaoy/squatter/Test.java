@@ -11,7 +11,7 @@ public class Test {
         char[][] contents = {
                 {'+', 'W', 'W', 'W', 'B', '+'},
                 {'W', '+', '+', '+', 'W', 'W'},
-                {'W', '+', '+', '+', 'W', 'B'},
+                {'W', '+', 'B', '+', 'W', 'B'},
                 {'W', '+', '+', 'W', '+', '+'},
                 {'+', 'W', '+', 'W', '+', 'B'},
                 {'+', '+', 'W', '+', 'B', '+'},
@@ -19,7 +19,8 @@ public class Test {
         Board board = new Board(contents);
 //        board.evaluate(player);
         board.findCycle();
-        System.out.println(board);
+        System.out.println(board.boardToString());
+        System.out.println(board.statusToString());
 //        char[][] contents = {
 //                {'+', 'W', '+', '+', 'W', '+'},
 //                {'W', '+', 'W', 'W', '+', 'W'},
