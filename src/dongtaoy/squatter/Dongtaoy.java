@@ -21,6 +21,7 @@ public class Dongtaoy implements Player {
         return 0;
     }
 
+    public int getPiece(){return this.piece;}
     public int getOpponentPiece(){
         return piece == Piece.BLACK ? Piece.WHITE : Piece.BLACK;
     }

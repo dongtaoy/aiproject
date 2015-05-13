@@ -19,8 +19,7 @@ public class Test {
         Board board = new Board(contents);
 //        board.evaluate(player);
         board.findCycle();
-        System.out.println(board.boardToString());
-        System.out.println(board.statusToString());
+        System.out.println(board);
 //        char[][] contents = {
 //                {'+', 'W', '+', '+', 'W', '+'},
 //                {'W', '+', 'W', 'W', '+', 'W'},
