@@ -1,10 +1,13 @@
 package dongtaoy.squatter;
 
 import aiproj.squatter.Move;
+import aiproj.squatter.Piece;
+import aiproj.squatter.Player;
+import com.sun.deploy.uitoolkit.impl.fx.ui.MixedCodeInSwing;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
+import java.awt.image.AreaAveragingScaleFilter;
+import java.lang.reflect.Array;
+import java.util.*;
 
 /**
  * Created by dongtao on 3/25/2015.
@@ -27,7 +30,25 @@ public class Board {
         // Store cell in cell object;
         for (int i = 0; i < this.dimension; i++)
             for (int j = 0; j < this.dimension; j++)
+                if (contents[i][j] == 'B')
+                    cells[i][j] = new Cell(Piece.BLACK, i, j);
+                else if (contents[i][j] == 'W')
+                    cells[i][j] = new Cell(Piece.WHITE, i, j);
+                else if (contents[i][j] == '+')
+                    cells[i][j] = new Cell(Piece.EMPTY, i, j);
+                else if (contents[i][j] == '-')
+                    cells[i][j] = new Cell(Piece.DEAD, i, j);
+    }
+
+
+    public Board(int[][] contents) {
+        this.dimension = contents.length;
+        this.cells = new Cell[this.dimension][this.dimension];
+        // Store cell in cell object;
+        for (int i = 0; i < this.dimension; i++)
+            for (int j = 0; j < this.dimension; j++)
                 cells[i][j] = new Cell(contents[i][j], i, j);
+
     }
 
     public Board(int dimension) {
@@ -35,18 +56,18 @@ public class Board {
         this.cells = new Cell[this.dimension][this.dimension];
         for (int i = 0; i < this.dimension; i++)
             for (int j = 0; j < this.dimension; j++)
-                cells[i][j] = new Cell('0', i, j);
+                cells[i][j] = new Cell(Piece.EMPTY, i, j);
     }
 
-    public Board(Board board, Cell cell, char player) {
+    public Board(Board board, Cell cell, int piece) {
         this.dimension = board.getDimension();
         this.cells = new Cell[this.dimension][this.dimension];
         for (int i = 0; i < this.dimension; i++) {
             for (int j = 0; j < this.dimension; j++) {
                 if (board.getCells()[i][j].equals(cell))
-                    this.cells[i][j] = new Cell(player, i, j);
+                    this.cells[i][j] = new Cell(piece, i, j);
                 else
-                    this.cells[i][j] = new Cell(board.getCells()[i][j].getContent(), i, j);
+                    this.cells[i][j] = new Cell(board.getCells()[i][j].getPiece(), i, j);
             }
         }
     }
@@ -54,41 +75,41 @@ public class Board {
     /**
      * Check win for this board
      */
-    public void checkWin() {
-        int whiteCaptured = 0;
-        int blackCaptured = 0;
-        boolean isFinished = true;
-
-        for (int i = 0; i < this.dimension; i++) {
-            for (int j = 0; j < this.dimension; j++) {
-                // if cell is captured
-                if (cells[i][j].getContent() == '-') {
-                    // if the previous cell is captured
-                    if (cells[i][j - 1].getContent() != '-')
-                        cells[i][j].setCapturedBy(cells[i][j - 1].getContent());
-                    else
-                        cells[i][j].setCapturedBy(cells[i][j - 1].getCapturedBy());
-
-                    // increment counter
-                    if (cells[i][j].getCapturedBy() == 'W')
-                        whiteCaptured++;
-                    else
-                        blackCaptured++;
-                } else if (cells[i][j].getContent() == '+') {
-                    // if there is any '+' in cell, game is not finished
-                    isFinished = false;
-                }
-            }
-        }
-        // if finished print who wins or a draw
-        if (isFinished)
-            System.out.println(blackCaptured > whiteCaptured ? "Black" : (blackCaptured == whiteCaptured ? "Draw" : "White"));
-        else
-            System.out.println("None");
-        System.out.println(whiteCaptured);
-        System.out.println(blackCaptured);
-
-    }
+//    public void checkWin() {
+//        int whiteCaptured = 0;
+//        int blackCaptured = 0;
+//        boolean isFinished = true;
+//
+//        for (int i = 0; i < this.dimension; i++) {
+//            for (int j = 0; j < this.dimension; j++) {
+//                // if cell is captured
+//                if (cells[i][j].getPiece() == '-') {
+//                    // if the previous cell is captured
+//                    if (cells[i][j - 1].getPiece() != '-')
+//                        cells[i][j].setCapturedBy(cells[i][j - 1].getPiece());
+//                    else
+//                        cells[i][j].setCapturedBy(cells[i][j - 1].getCapturedBy());
+//
+//                    // increment counter
+//                    if (cells[i][j].getCapturedBy() == 'W')
+//                        whiteCaptured++;
+//                    else
+//                        blackCaptured++;
+//                } else if (cells[i][j].getPiece() == '+') {
+//                    // if there is any '+' in cell, game is not finished
+//                    isFinished = false;
+//                }
+//            }
+//        }
+//        // if finished print who wins or a draw
+//        if (isFinished)
+//            //System.out.println(blackCaptured > whiteCaptured ? "Black" : (blackCaptured == whiteCaptured ? "Draw" : "White"));
+//        else
+//            //System.out.println("None");
+//        //System.out.println(whiteCaptured);
+//        //System.out.println(blackCaptured);
+//
+//    }
 
     /**
      * toString function for Board
@@ -99,7 +120,7 @@ public class Board {
         StringBuilder stringBuilder = new StringBuilder();
         for (Cell[] row : this.cells) {
             for (Cell c : row) {
-                stringBuilder.append(c.getContent());
+                stringBuilder.append(c);
                 stringBuilder.append(" ");
             }
             stringBuilder.append("\n");
@@ -108,8 +129,135 @@ public class Board {
     }
 
     public int placeCell(Move move) {
-        cells[move.Row][move.Col] = new Cell(move.P == 1 ? 'W' : 'B', move.Row, move.Col);
+        cells[move.Row][move.Col] = new Cell(move.P, move.Row, move.Col);
         return 1;
+    }
+
+    public void findCycle() {
+        for (int i = 1; i < this.dimension - 1; i++) {
+            for (int j = 1; j < this.dimension - 1; j++) {
+
+                Cell currentCell = this.cells[i][j];
+                if (currentCell.getPiece() != Piece.DEAD) {
+                    Integer[] array = new Integer[]{Piece.WHITE, Piece.BLACK, Piece.DEAD, Piece.EMPTY};
+                    HashSet<Integer> validList = new HashSet<>(Arrays.asList(array));
+                    HashSet<Cell> visited = new HashSet<>();
+                    //System.out.printf("\n\ncurrent: (%d, %d)\n", currentCell.getRow(), currentCell.getCol());
+
+                    if (currentCell.getPiece() == Piece.EMPTY || currentCell.getPiece() == Piece.DEAD) {
+                        ArrayList<Cell> surroundedCells = getSurroundedCell(this.cells[i][j], new HashSet<Cell>(), validList);
+                        boolean isBlack = false, isWhite = false;
+                        //System.out.println("empty cell first surround: " + surroundedCells);
+                        for (Cell cell : surroundedCells) {
+                            if (cell.getPiece() == Piece.BLACK)
+                                isBlack = true;
+                            if (cell.getPiece() == Piece.WHITE)
+                                isWhite = true;
+                        }
+                        if (!(isBlack && isWhite)) {
+                            if (isBlack) {
+                                validList.remove(Piece.BLACK);
+                            }
+                            if (isWhite) {
+                                validList.remove(Piece.WHITE);
+                            }
+                            //System.out.println("VALIDLIST: " + validList);
+
+                            if (dfs(visited, currentCell, validList)) {
+                                currentCell.setPiece(Piece.DEAD);
+                                //System.out.printf("answer: (%d, %d)\n", i, j);
+
+                            }
+                        }
+
+                    } else {
+                        switch (this.cells[i][j].getPiece()) {
+                            case Piece.BLACK:
+                                validList.remove(Piece.WHITE);
+                                break;
+                            case Piece.WHITE:
+                                validList.remove(Piece.BLACK);
+                                break;
+                        }
+                        //System.out.println("VALIDLIST: " + validList);
+                        if (dfs(visited, currentCell, validList)) {
+                            currentCell.setPiece(Piece.DEAD);
+                            //System.out.printf("answer: (%d, %d)\n", i, j);
+                        }
+                    }
+                }
+            }
+        }
+
+    }
+
+    private boolean dfs(HashSet<Cell> visited, Cell current, HashSet<Integer> validList) {
+
+        visited.add(current);
+
+        ArrayList<Cell> surroundedCells = this.getSurroundedCell(current, visited, validList);
+        //System.out.println("surround" +surroundedCells);
+        //System.out.println("visted" + visited);
+        if (surroundedCells.size() == 0) {
+            return true;
+        }
+
+        for (Cell cell : surroundedCells) {
+            if (isOnBoarder(cell))
+                return false;
+        }
+
+        for (Cell cell : surroundedCells) {
+            if (dfs(visited, cell, validList)) {
+                cell.setPiece(Piece.DEAD);
+                return true;
+            } else
+                return false;
+        }
+        return false;
+    }
+
+    private boolean isOnBoarder(Cell cell) {
+        if (cell.getRow() == 0 ||
+                cell.getRow() == (this.dimension - 1) ||
+                cell.getCol() == 0 ||
+                cell.getCol() == (this.dimension - 1))
+            return true;
+        return false;
+    }
+
+
+    private ArrayList<Cell> getSurroundedCell(Cell cell, HashSet<Cell> visited, HashSet<Integer> validList) {
+        ArrayList<Cell> cells = new ArrayList<>();
+        int row = cell.getRow();
+        int col = cell.getCol();
+
+        //System.out.printf("in surrounded cell: %d, %d\n", cell.getRow(), cell.getCol());
+        //System.out.println("in surrounded visited" + visited);
+        //TOP
+        if ((row - 1) >= 0)
+            if (validList.contains(this.cells[row - 1][col].getPiece()))
+                if (!visited.contains(this.cells[row - 1][col]))
+                    cells.add(this.cells[row - 1][col]);
+        //BOTTOM
+        if ((row + 1) < this.dimension)
+            if (validList.contains(this.cells[row + 1][col].getPiece()))
+                if (!visited.contains(this.cells[row + 1][col]))
+                    cells.add(this.cells[row + 1][col]);
+        //LEFT
+        if ((col - 1) >= 0)
+            if (validList.contains(this.cells[row][col - 1].getPiece()))
+                if (!visited.contains(this.cells[row][col - 1]))
+                    cells.add(this.cells[row][col - 1]);
+
+        //RIGHT
+        if ((col + 1) < this.dimension)
+            if (validList.contains(this.cells[row][col + 1].getPiece()))
+                if (!visited.contains(this.cells[row][col + 1]))
+                    cells.add(this.cells[row][col + 1]);
+
+
+        return cells;
     }
 
 
@@ -123,26 +271,26 @@ public class Board {
     }
 
     public Board verticalFlip() {
-        char[][] contents = new char[this.dimension][this.dimension];
+        int[][] contents = new int[this.dimension][this.dimension];
         for (int i = 0; i < this.dimension; i++)
             for (int j = 0; j < this.dimension; j++)
-                contents[i][j] = this.cells[i][this.dimension - j - 1].getContent();
+                contents[i][j] = this.cells[i][this.dimension - j - 1].getPiece();
         return new Board(contents);
     }
 
     public Board horizontalFlip() {
-        char[][] contents = new char[this.dimension][this.dimension];
+        int[][] contents = new int[this.dimension][this.dimension];
         for (int i = 0; i < this.dimension; i++)
             for (int j = 0; j < this.dimension; j++)
-                contents[i][j] = this.cells[this.dimension - i - 1][j].getContent();
+                contents[i][j] = this.cells[this.dimension - i - 1][j].getPiece();
         return new Board(contents);
     }
 
     public Board transposeDown() {
-        char[][] contents = new char[this.dimension][this.dimension];
+        int[][] contents = new int[this.dimension][this.dimension];
         for (int i = 0; i < this.dimension; i++)
             for (int j = 0; j < this.dimension; j++)
-                contents[i][j] = this.cells[j][i].getContent();
+                contents[i][j] = this.cells[j][i].getPiece();
         return new Board(contents);
     }
 
@@ -195,9 +343,44 @@ public class Board {
         Board board = (Board) object;
         for (int i = 0; i < this.dimension; i++)
             for (int j = 0; j < this.dimension; j++)
-                if (this.cells[i][j].getContent() != board.getCells()[i][j].getContent())
+                if (this.cells[i][j].getPiece() != board.getCells()[i][j].getPiece())
                     return false;
         return true;
+    }
+
+    public int evaluate(Player player) {
+
+
+        for (int i = 0; i < this.dimension; i++) {
+            for (int j = 0; j < this.dimension; j++) {
+                if(this.cells[i][j].getPiece() != Piece.EMPTY) {
+                    // if border
+                    if (i == 0 || i == (this.dimension - 1) ||
+                            j == 0 || j == (this.dimension - 1)) {
+
+                    }
+                }
+
+            }
+        }
+
+
+//        for (int i=0; i < this.dimension;i++){
+//            for (int j=0; j<this.dimension;j++){
+//                if(this.getCells()[i][j].getPiece() == Piece.EMPTY){
+//                    System.out.print(this.getCells()[i][j]);
+//                }else{
+//                    System.out.print(" ");
+//                }
+//            }
+//            System.out.print("\n");
+//        }
+        // Number of Piece with your player that connected with empty spot -> Increase Evaluation Value
+        // Number of Opponent piece associated with the empty spot -> Decrease Evaluation Value
+        // Boarder with less possible connection for next move -> Decrease Evaluation Value
+        // Occupy a piece on the empty piece after check with findLoop(), find the available "-" opportunity ->Increase Evaluation Value
+        // 
+        return 1;
     }
 
 

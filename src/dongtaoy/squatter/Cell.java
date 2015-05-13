@@ -2,13 +2,17 @@ package dongtaoy.squatter;
 
 import aiproj.squatter.Piece;
 
+import java.util.Map;
+
 /**
  * Created by dongtao on 3/25/2015.
  */
 public class Cell {
-    private char content;
-    private char capturedBy;
+
+
     private int row;
+    private int col;
+    private int piece;
 
     public int getRow() {
         return row;
@@ -18,35 +22,44 @@ public class Cell {
         return col;
     }
 
-    private int col;
 
-    public Cell(char content, int row, int col){
-        this.content = content;
+    public Cell(int piece, int row, int col){
+        this.piece = piece;
         this.row = row;
         this.col = col;
     }
 
-    public char getContent() {
-        return content;
+
+    public int getPiece() {
+        return piece;
     }
 
-    public void setContent(char content) {
-        this.content = content;
-    }
-
-    public char getCapturedBy() {
-        return capturedBy;
-    }
-
-    public void setCapturedBy(char capturedBy) {
-        this.capturedBy = capturedBy;
+    public void setPiece(int piece) {
+        this.piece = piece;
     }
 
     public boolean isEmpty(){
-        return content == Character.forDigit(Piece.EMPTY, 10);
+        return this.piece == Piece.EMPTY;
     }
 
     public String toString() {
-        return row + ", " + col + ": " + content;
+        switch (this.piece){
+            case Piece.BLACK :
+                return "B";
+
+            case Piece.WHITE :
+                return "W";
+
+            case Piece.EMPTY :
+                return "+";
+
+            case Piece.DEAD :
+                return "-";
+
+            case Piece.INVALID:
+                return "/";
+            default:
+                return "ERROR";
+        }
     }
 }

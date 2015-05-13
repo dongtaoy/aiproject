@@ -1,6 +1,7 @@
 package dongtaoy.squatter;
 
 import aiproj.squatter.Move;
+import aiproj.squatter.Piece;
 import aiproj.squatter.Player;
 import javafx.util.Pair;
 
@@ -10,28 +11,23 @@ import java.util.ArrayList;
 
 public class Dongtaoy implements Player {
 
-    private char piece;
-    private char opponentPiece;
-    private int p;
+    private int piece;
     private Board board;
 
 
-    public int init(int n, int p) {
+    public int init(int n, int piece) {
         this.board = new Board(n);
-        this.p = p;
-        if (p == 1)
-            this.piece = 'W';
-        else if (p == 2)
-            this.piece = 'B';
-        else
-            return -1;
-        this.opponentPiece = (this.piece == 'W') ? 'B' : 'W';
+        this.piece = piece;
         return 0;
     }
 
+    public int getOpponentPiece(){
+        return piece == Piece.BLACK ? Piece.WHITE : Piece.BLACK;
+    }
+
     public Move makeMove() {
-        Cell cell = minimax(board, null, 5, Integer.MIN_VALUE, Integer.MAX_VALUE, true).getValue();
-        Move move = new Move(this.p, cell.getRow(), cell.getCol());
+        Cell cell = minimax(board, null, 6, Integer.MIN_VALUE, Integer.MAX_VALUE, true).getValue();
+        Move move = new Move(this.piece, cell.getRow(), cell.getCol());
         board.placeCell(move);
         return move;
     }
@@ -52,7 +48,7 @@ public class Dongtaoy implements Player {
     public Pair<Integer, Cell> minimax(Board board, Cell move, int depth, int alpha, int beta, boolean isMax) {
         ArrayList<Cell> avaliableCells = board.getAvaliableCells();
         if (depth == 0 || avaliableCells.size() == 0) {
-            return new Pair<>(evaluate(board), move);
+            return new Pair<>(board.evaluate(this), move);
         }
         if (isMax) {
             Pair<Integer, Cell> bestValue = new Pair<>(Integer.MIN_VALUE, move);
@@ -71,7 +67,7 @@ public class Dongtaoy implements Player {
         } else {
             Pair<Integer, Cell> bestValue = new Pair<>(Integer.MAX_VALUE, move);
             for (Cell cell : avaliableCells) {
-                Board newBoard = new Board(board, cell, this.opponentPiece);
+                Board newBoard = new Board(board, cell, this.getOpponentPiece());
                 Pair<Integer, Cell> value = minimax(newBoard, cell, depth - 1, alpha, beta, true);
                 if (value.getKey() < bestValue.getKey()) {
                     bestValue = new Pair<>(value.getKey(), cell);
@@ -86,9 +82,10 @@ public class Dongtaoy implements Player {
 
     }
 
-    private int evaluate(Board board) {
-        return 1;
-    }
+
+
+
+
 
     public String toString(){
         return new StringBuilder()
