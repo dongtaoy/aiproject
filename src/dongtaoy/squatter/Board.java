@@ -19,7 +19,7 @@ public class Board {
     private int dimension;
     private Cell[][] cells;
 
-    private boolean DEBUG = false;
+    private boolean DEBUG = true;
 
     /**
      * Create Board object
@@ -171,7 +171,9 @@ public class Board {
                                 System.out.println("VALIDLIST: " + validList);
                             }
                             if (!isOnBoarder(dfs(visited, currentCell, validList))) {
-                                currentCell.setPiece(Piece.DEAD);
+                                for(Cell cell : visited) {
+                                    cell.setPiece(Piece.DEAD);
+                                }
                             }
 
 //                            if (dfs(visited, currentCell, validList)) {
@@ -196,7 +198,9 @@ public class Board {
                             System.out.println("VALIDLIST: " + validList);
                         }
                         if (!isOnBoarder(dfs(visited, currentCell, validList))) {
-                            currentCell.setPiece(Piece.DEAD);
+                            for(Cell cell : visited) {
+                                cell.setPiece(Piece.DEAD);
+                            }
                         }
 
 //                        if (dfs(visited, currentCell, validList)) {
