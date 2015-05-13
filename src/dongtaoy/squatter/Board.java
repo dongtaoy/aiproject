@@ -144,14 +144,14 @@ public class Board {
                     Integer[] array = new Integer[]{Piece.WHITE, Piece.BLACK, Piece.DEAD, Piece.EMPTY};
                     HashSet<Integer> validList = new HashSet<>(Arrays.asList(array));
                     HashSet<Cell> visited = new HashSet<>();
-                    if(DEBUG){
+                    if (DEBUG) {
                         System.out.printf("\n\ncurrent: (%d, %d)\n", currentCell.getRow(), currentCell.getCol());
                     }
 
                     if (currentCell.getPiece() == Piece.EMPTY || currentCell.getPiece() == Piece.DEAD) {
                         ArrayList<Cell> surroundedCells = getSurroundedCell(this.cells[i][j], new HashSet<Cell>(), validList);
                         boolean isBlack = false, isWhite = false;
-                        if(DEBUG){
+                        if (DEBUG) {
                             System.out.println("empty cell first surround: " + surroundedCells);
                         }
                         for (Cell cell : surroundedCells) {
@@ -167,17 +167,20 @@ public class Board {
                             if (isWhite) {
                                 validList.remove(Piece.WHITE);
                             }
-                            if(DEBUG){
+                            if (DEBUG) {
                                 System.out.println("VALIDLIST: " + validList);
                             }
-
-                            if (dfs(visited, currentCell, validList)) {
+                            if (!isOnBoarder(dfs(visited, currentCell, validList))) {
                                 currentCell.setPiece(Piece.DEAD);
-                                if(DEBUG){
-                                    System.out.printf("answer: (%d, %d)\n", i, j);
-                                }
-
                             }
+
+//                            if (dfs(visited, currentCell, validList)) {
+//                                currentCell.setPiece(Piece.DEAD);
+//                                if(DEBUG){
+//                                    System.out.printf("answer: (%d, %d)\n", i, j);
+//                                }
+//
+//                            }
                         }
 
                     } else {
@@ -189,15 +192,19 @@ public class Board {
                                 validList.remove(Piece.BLACK);
                                 break;
                         }
-                        if(DEBUG){
+                        if (DEBUG) {
                             System.out.println("VALIDLIST: " + validList);
                         }
-                        if (dfs(visited, currentCell, validList)) {
+                        if (!isOnBoarder(dfs(visited, currentCell, validList))) {
                             currentCell.setPiece(Piece.DEAD);
-                            if(DEBUG){
-                                System.out.printf("answer: (%d, %d)\n", i, j);
-                            }
                         }
+
+//                        if (dfs(visited, currentCell, validList)) {
+//                            currentCell.setPiece(Piece.DEAD);
+//                            if(DEBUG){
+//                                System.out.printf("answer: (%d, %d)\n", i, j);
+//                            }
+//                        }
                     }
                 }
             }
@@ -205,40 +212,32 @@ public class Board {
 
     }
 
-    private boolean dfs(HashSet<Cell> visited, Cell current, HashSet<Integer> validList) {
+    private HashSet<Cell> dfs(HashSet<Cell> visited, Cell current, HashSet<Integer> validList) {
 
         visited.add(current);
-
         ArrayList<Cell> surroundedCells = this.getSurroundedCell(current, visited, validList);
-        if(DEBUG){
-            System.out.println("surround" +surroundedCells);
+        if (DEBUG) {
+            System.out.println("surround" + surroundedCells);
             System.out.println("visted" + visited);
         }
         if (surroundedCells.size() == 0) {
-            return true;
+            return visited;
         }
 
         for (Cell cell : surroundedCells) {
-            if (isOnBoarder(cell))
-                return false;
+            visited.addAll(dfs(visited, cell, validList));
         }
-
-        for (Cell cell : surroundedCells) {
-            if (dfs(visited, cell, validList)) {
-                cell.setPiece(Piece.DEAD);
-                return true;
-            } else
-                return false;
-        }
-        return false;
+        return visited;
     }
 
-    private boolean isOnBoarder(Cell cell) {
-        if (cell.getRow() == 0 ||
-                cell.getRow() == (this.dimension - 1) ||
-                cell.getCol() == 0 ||
-                cell.getCol() == (this.dimension - 1))
-            return true;
+    private boolean isOnBoarder(Collection<Cell> cells) {
+        for (Cell cell : cells) {
+            if (cell.getRow() == 0 ||
+                    cell.getRow() == (this.dimension - 1) ||
+                    cell.getCol() == 0 ||
+                    cell.getCol() == (this.dimension - 1))
+                return true;
+        }
         return false;
     }
 
@@ -248,7 +247,7 @@ public class Board {
         int row = cell.getRow();
         int col = cell.getCol();
 
-        if(DEBUG){
+        if (DEBUG) {
             System.out.printf("in surrounded cell: %d, %d\n", cell.getRow(), cell.getCol());
             System.out.println("in surrounded visited" + visited);
         }
