@@ -170,7 +170,8 @@ public class Board {
                             if (DEBUG) {
                                 System.out.println("VALIDLIST: " + validList);
                             }
-                            if (!isOnBoarder(dfs(visited, currentCell, validList))) {
+                            visited = dfs(visited, currentCell, validList);
+                            if (!isOnBoarder(visited)) {
                                 for(Cell cell : visited) {
                                     cell.setPiece(Piece.DEAD);
                                 }
@@ -197,7 +198,8 @@ public class Board {
                         if (DEBUG) {
                             System.out.println("VALIDLIST: " + validList);
                         }
-                        if (!isOnBoarder(dfs(visited, currentCell, validList))) {
+                        visited = dfs(visited, currentCell, validList);
+                        if (!isOnBoarder(visited)) {
                             for(Cell cell : visited) {
                                 cell.setPiece(Piece.DEAD);
                             }
