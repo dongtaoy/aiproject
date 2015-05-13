@@ -27,7 +27,7 @@ public class Dongtaoy implements Player {
     }
 
     public Move makeMove() {
-        Cell cell = minimax(board, null, 6, Integer.MIN_VALUE, Integer.MAX_VALUE, true).getValue();
+        Cell cell = minimax(board, null, 4, Integer.MIN_VALUE, Integer.MAX_VALUE, true).getValue();
         Move move = new Move(this.piece, cell.getRow(), cell.getCol());
         board.placeCell(move);
         return move;
@@ -43,7 +43,7 @@ public class Dongtaoy implements Player {
 
 
     public void printBoard(PrintStream output) {
-        output.print(board);
+        output.print(board.statusToString());
     }
 
     public Pair<Integer, Cell> minimax(Board board, Cell move, int depth, int alpha, int beta, boolean isMax) {

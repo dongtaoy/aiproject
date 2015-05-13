@@ -4,6 +4,7 @@ import aiproj.squatter.Move;
 import aiproj.squatter.Piece;
 import aiproj.squatter.Player;
 import com.sun.deploy.uitoolkit.impl.fx.ui.MixedCodeInSwing;
+import org.omg.PortableInterceptor.INACTIVE;
 
 import java.awt.image.AreaAveragingScaleFilter;
 import java.lang.reflect.Array;
@@ -41,6 +42,7 @@ public class Board {
                     cells[i][j] = new Cell(Piece.EMPTY, i, j);
                 else if (contents[i][j] == '-')
                     cells[i][j] = new Cell(Piece.DEAD, i, j);
+
     }
 
 
@@ -79,7 +81,7 @@ public class Board {
     /**
      * Check win for this board
      */
-    public HashMap<String, Integer> checkWin(Dongtaoy player) {
+    public HashMap<Integer, Integer> checkWin(Dongtaoy player) {
         int ownsideCaptured = 0;
         int opponentCaptured = 0;
         int isFinished = 1;
@@ -110,10 +112,10 @@ public class Board {
 //            System.out.println(ownsideCaptured > opponentCaptured ? player.getPiece() :
 //                    (ownsideCaptured == opponentCaptured ? "Draw" : player.getOpponentPiece()));
 //        else
-        HashMap<String, Integer> result = new HashMap<>();
-        result.put("Ownside", ownsideCaptured);
-        result.put("Opponent", opponentCaptured);
-        result.put("IsFinished", isFinished);
+        HashMap<Integer, Integer> result = new HashMap<>();
+        result.put(player.getPiece(), ownsideCaptured);
+        result.put(player.getOpponentPiece(), opponentCaptured);
+        //result.put("IsFinished", isFinished);
         return result;
     }
 
@@ -370,6 +372,8 @@ public class Board {
     }
 
     public int evaluate(Dongtaoy player) {
+        //Find the minus for my side
+        this.findCycle();
         HashSet<Cell> ownsideConnect = new HashSet<>();
         HashSet<Cell> opponentConnect = new HashSet<>();
         int border = 0;
@@ -398,24 +402,26 @@ public class Board {
             }
         }
 
-        //Find the minus for my side
-        this.findCycle();
-        HashMap<String, Integer> capctureResult = this.checkWin(player);
+
+        HashMap<Integer, Integer> captureResult = this.checkWin(player);
+
+        int value = ownsideConnect.size() * 5 + captureResult.get(player.getPiece()) * 100 -
+                opponentConnect.size() * 2 - captureResult.get(player.getOpponentPiece()) * 100;
 
 //        if (DEBUG){
-        System.out.println("----EVALUATION FUNCTION DEBUG----");
-//        System.out.printf("Ownside's piece: %10s\n", player.getPiece());
-        System.out.printf("Ownside's connectivity: %4d\n", ownsideConnect.size());
-        System.out.printf("Opponent's connectivity: %3d\n", opponentConnect.size());
-        System.out.printf("# of empty cell onBorder: %d\n", border);
-        System.out.printf("Ownside's capture point: %2d\n", capctureResult.get("Ownside"));
-        System.out.printf("Opponent's capture point: %d\n", capctureResult.get("Opponent"));
-        System.out.printf("Is game finished? %13s\n", (capctureResult.get("IsFinished")==1?"TRUE":"FALSE"));
-        System.out.println("---------------------------------");
-//        }
+//        System.out.println("----EVALUATION FUNCTION DEBUG----");
+////        System.out.printf("Ownside's piece: %10s\n", player.getPiece());
+//        System.out.printf("Ownside's connectivity: %4d\n", ownsideConnect.size());
+//        System.out.printf("Opponent's connectivity: %3d\n", opponentConnect.size());
+//        System.out.printf("# of empty cell onBorder: %d\n", border);
+//        System.out.printf("Ownside's capture point: %2d\n", captureResult.get(player.getPiece()));
+//        System.out.printf("Opponent's capture point: %d\n", captureResult.get(player.getOpponentPiece()));
+////        System.out.printf("Is game finished? %13s\n", (captureResult.get("IsFinished")==1?"TRUE":"FALSE"));
+//        System.out.println("---------------------------------");
+////        }
 
 
-        return 1;
+        return value;
     }
 
     private HashMap<String, Cell> getConnectedCell(Cell currentCell) {

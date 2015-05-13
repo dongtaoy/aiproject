@@ -24,7 +24,7 @@ public class Test {
         board.evaluate(player);
 //        board.findCycle();
 //        System.out.println(board.boardToString());
-//        System.out.println(board.statusToString());
+        System.out.println(board.statusToString());
 //
 //        char[][] contents = {
 //                {'+', 'W', '+', '+', 'W', '+'},
