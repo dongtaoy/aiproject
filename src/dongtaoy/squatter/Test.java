@@ -17,9 +17,9 @@ public class Test {
                 {'+', '+', 'W', '+', 'B', '+'},
         };
         Board board = new Board(contents);
-//        board.evaluate(player);
-        board.findCycle();
-        System.out.println(board);
+        board.evaluate(player);
+//        board.findCycle();
+//        System.out.println(board);
 //        char[][] contents = {
 //                {'+', 'W', '+', '+', 'W', '+'},
 //                {'W', '+', 'W', 'W', '+', 'W'},

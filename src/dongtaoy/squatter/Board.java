@@ -19,7 +19,7 @@ public class Board {
     private int dimension;
     private Cell[][] cells;
 
-    private boolean DEBUG = true;
+    private boolean DEBUG = false;
 
     /**
      * Create Board object
@@ -372,16 +372,29 @@ public class Board {
         return true;
     }
 
-    public int evaluate(Player player) {
-        int connectivity = 0;
+    public int evaluate(Dongtaoy player) {
+        int ownsideConnect = 0;
+        int opponentConnect = 0;
+        int opposite = player.getOpponentPiece();
+        int border = 0;
         for (int i = 0; i < this.dimension; i++) {
             for (int j = 0; j < this.dimension; j++) {
-//                int connectivity = 0;
-                HashMap<String, Integer> cellSet = this.getConnectedCell(this.cells[i][j]);
-                for(int value: cellSet.values())
-                    if (value == Piece.EMPTY)
-                        connectivity++;
-                System.out.println(connectivity);
+                Cell currentCell = this.cells[i][j];
+
+                //Find empty border cell
+                if( (i == 0) || (i == this.dimension - 1) || (j == 0) || (j == this.dimension))
+                    if (currentCell.getPiece() == Piece.EMPTY)
+                        border++;
+
+
+                //Find the connectivity of each cell
+                HashMap<String, Integer> cellSet = this.getConnectedCell(currentCell);
+                if(player.getPiece() == currentCell.getPiece()){
+                    for(int value: cellSet.values())
+                        if (value == Piece.EMPTY)
+                            ownsideConnect++;
+                }
+//                    System.out.println();
             }
         }
 
