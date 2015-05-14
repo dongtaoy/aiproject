@@ -232,13 +232,18 @@ public class Board {
     public double evaluate(Dongtaoy player) {
         int playerCaptured = 0;
         int opponentCaptured = 0;
-        HashSet<Cell> visited = new HashSet<>();
         int playerChain = 0;
         int opponentChain = 0;
+        int playerCentralize = 0;
+        int opponentCentralize = 0;
+        double maxChain = Math.pow(Math.ceil(this.dimension / 2), 2);
+
+        HashSet<Cell> playerConnectivity = new HashSet<>();
+        HashSet<Cell> opponentConnectivity = new HashSet<>();
+        HashSet<Cell> visited = new HashSet<>();
         HashSet<Cell> playerSafeCell = new HashSet<>();
         HashSet<Cell> opponentSafeCell = new HashSet<>();
-        int playerCentralize = 0;
-        int opponentCentalize = 0;
+
         for (int i = 0; i < this.dimension; i++) {
             for (int j = 0; j < this.dimension; j++) {
                 final Cell cell = this.cells[i][j];
@@ -264,8 +269,7 @@ public class Board {
                     if (cell.isPlayerCell(player))
                         playerCentralize += Math.min(i, (this.dimension) - i) + Math.min(j, (this.dimension) - j);
                     else
-                        opponentCentalize += Math.min(i, (this.dimension) - i) + Math.min(j, (this.dimension) - j);
-
+                        opponentCentralize += Math.min(i, (this.dimension) - i) + Math.min(j, (this.dimension) - j);
 
 
                 if (!visited.contains(cell)) {
@@ -285,15 +289,24 @@ public class Board {
                                 add(Cell.Direction.BOTTOMRIGHT);
                             }});
                     visited.addAll(temp);
-//                    System.out.println(temp);
-                    if (cell.isPlayerCell(player))
+                    if (cell.isPlayerCell(player)){
                         playerChain++;
-                    else if (cell.getPiece() == player.getOpponentPiece())
+                    } else if (cell.getPiece() == player.getOpponentPiece()){
                         opponentChain++;
-
+                    }
                 }
+                HashMap<Cell.Direction, Cell> cellHashMap = cell.getEightConnectedCells();
+                if (cell.getPiece() == Piece.BLACK || cell.getPiece() == Piece.WHITE)
+                    for(Cell.Direction direction: Cell.Direction.values()){
+                        if (cellHashMap.containsKey(direction) && cellHashMap.get(direction).getPiece() == Piece.EMPTY){
+                            if (cell.isPlayerCell(player)){
+                                playerConnectivity.add(cellHashMap.get(direction));
+                            }else{
+                                opponentConnectivity.add(cellHashMap.get(direction));
+                            }
+                        }
+                    }
 
-//
 
                 if (cell.isCaptured(player.getPiece())) {
                     playerCaptured++;
@@ -311,15 +324,19 @@ public class Board {
             System.out.println("opponent Safe cell: " + opponentSafeCell.size());
 
             System.out.println("last player centralize: " + playerCentralize);
-            System.out.println("last opponent centralize cell: " + opponentCentalize);
+            System.out.println("last opponent centralize cell: " + opponentCentralize);
 
             System.out.println("player chain: " + playerChain);
             System.out.println("Opponent chain: " + opponentChain);
 
+            System.out.println("player connectivity: " + playerConnectivity.size());
+            System.out.println("Opponent connectivity: " + opponentConnectivity.size());
+
         }
-        double maxChain = Math.pow(Math.ceil(this.dimension / 2), 2);
-        return 10 * playerCaptured + playerSafeCell.size() + (maxChain - playerChain)
-                - 10 * opponentCaptured - opponentSafeCell.size() - (maxChain - opponentChain);
+
+        return 10 * playerCaptured + playerSafeCell.size() + (maxChain - playerChain) + playerConnectivity.size() * 3
+                - 10 * opponentCaptured - opponentSafeCell.size() - (maxChain - opponentChain)
+                - opponentConnectivity.size() * 3;
     }
 
 
