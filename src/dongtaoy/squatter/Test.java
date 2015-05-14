@@ -4,6 +4,7 @@
 package dongtaoy.squatter;
 
 
+import aiproj.squatter.Move;
 import aiproj.squatter.Piece;
 
 public class Test {
@@ -13,27 +14,35 @@ public class Test {
         player.init(6, Piece.BLACK);
 
         char[][] contents = {
-                {'+', '+', '+', '+', '+', '+'},
-                {'+', 'B', '+', '+', '+', '+'},
-                {'+', '+', 'B', '+', '+', '+'},
-                {'+', '+', '+', 'B', '+', '+'},
-                {'+', '+', '+', '+', '+', '+'},
+                {'+', 'W', '+', 'W', '+', '+'},
+                {'W', '+', '+', '+', 'W', '+'},
+                {'W', 'B', 'W', 'B', 'W', '+'},
+                {'W', '+', 'B', '+', 'W', '+'},
+                {'+', 'W', '+', 'W', '+', '+'},
                 {'+', '+', '+', '+', '+', '+'},
         };
         Board board = new Board(contents);
-        System.out.println(board.evaluate(player));
-//        board.findCycle();
-//        System.out.println(board.boardToString());
-        System.out.println(board.statusToString());
-//
+        board.evaluate(player);
+        System.out.println(board);
+        board.placeCell(new Move(Piece.WHITE, 4, 2));
+        board.evaluate(player);
+        System.out.println(board);
+
+
 //        char[][] contents = {
-//                {'+', '+', '+', '+', '+', '+'},
-//                {'+', '+', '+', '+', '+', '+'},
-//                {'+', '+', '+', '+', '+', '+'},
-//                {'+', '+', '+', '+', '+', '+'},
-//                {'+', '+', '+', '+', '+', '+'},
+//                {'+', 'B', 'B', 'B', '+', '+'},
+//                {'B', '+', 'W', '+', 'B', '+'},
+//                {'B', 'W', '+', 'W', 'B', '+'},
+//                {'B', '+', 'W', '+', 'B', '+'},
+//                {'+', 'B', '+', 'B', '+', '+'},
 //                {'+', '+', '+', '+', '+', '+'},
 //        };
+//        Board board = new Board(contents);
+//        board.evaluate(player);
+//        System.out.println(board);
+//        board.placeCell(new Move(Piece.BLACK, 4, 2));
+//        board.evaluate(player);
+//        System.out.println(board);
     }
 
 }

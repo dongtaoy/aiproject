@@ -2,13 +2,7 @@ package dongtaoy.squatter;
 
 import aiproj.squatter.Move;
 import aiproj.squatter.Piece;
-import aiproj.squatter.Player;
-import com.sun.deploy.uitoolkit.impl.fx.ui.MixedCodeInSwing;
-import org.omg.PortableInterceptor.INACTIVE;
 
-import java.awt.image.AreaAveragingScaleFilter;
-import java.lang.reflect.Array;
-import java.security.Permission;
 import java.util.*;
 
 /**
@@ -20,12 +14,12 @@ public class Board {
 
     private int dimension;
     private Cell[][] cells;
-    private Cell last;
     private boolean DEBUG = false;
 
     /**
      * Create Board object
-     *
+     * ONLY FOR TEST PURPOSE THIS FUNCTION MIGHT CRASH
+     * !!! CAPTUREDBY IN CELL IS NOT INITIALIZED
      * @param contents board layout in char[][] format
      */
     public Board(char[][] contents) {
@@ -35,146 +29,96 @@ public class Board {
         for (int i = 0; i < this.dimension; i++)
             for (int j = 0; j < this.dimension; j++)
                 if (contents[i][j] == 'B')
-                    cells[i][j] = new Cell(Piece.BLACK, i, j);
+                    cells[i][j] = new Cell(Piece.BLACK, this, i, j);
                 else if (contents[i][j] == 'W')
-                    cells[i][j] = new Cell(Piece.WHITE, i, j);
+                    cells[i][j] = new Cell(Piece.WHITE, this, i, j);
                 else if (contents[i][j] == '+')
-                    cells[i][j] = new Cell(Piece.EMPTY, i, j);
+                    cells[i][j] = new Cell(Piece.EMPTY, this, i, j);
                 else if (contents[i][j] == '-')
-                    cells[i][j] = new Cell(Piece.DEAD, i, j);
+                    cells[i][j] = new Cell(Piece.DEAD, this, i, j);
+        this.findCapturedCells();
 
     }
 
-
+    /**
+     * Create Board object
+     * ONLY FOR TESTING SYMMETRIC BOARD OTHERWISE MIGHT CRASH
+     * !!! CAPTUREDBY IN CELL IS NOT COPIED
+     * @param contents
+     */
     public Board(int[][] contents) {
         this.dimension = contents.length;
         this.cells = new Cell[this.dimension][this.dimension];
         // Store cell in cell object;
         for (int i = 0; i < this.dimension; i++)
             for (int j = 0; j < this.dimension; j++)
-                cells[i][j] = new Cell(contents[i][j], i, j);
-
+                cells[i][j] = new Cell(contents[i][j], this, i, j);
+        this.findCapturedCells();
     }
 
+    /**
+     * Create a Board object
+     * Used in initializing empty board
+     *
+     * @param dimension dimension of a board
+     */
     public Board(int dimension) {
         this.dimension = dimension;
         this.cells = new Cell[this.dimension][this.dimension];
         for (int i = 0; i < this.dimension; i++)
             for (int j = 0; j < this.dimension; j++)
-                cells[i][j] = new Cell(Piece.EMPTY, i, j);
+                cells[i][j] = new Cell(Piece.EMPTY, this, i, j, Cell.CaptureType.NOT_CAPTURED);
     }
 
+
+    /**
+     * Create a deep copy of a Board object
+     * Used in minimax algorithm
+     *
+     * @param board
+     * @param cell
+     * @param piece
+     */
     public Board(Board board, Cell cell, int piece) {
         this.dimension = board.getDimension();
         this.cells = new Cell[this.dimension][this.dimension];
         for (int i = 0; i < this.dimension; i++) {
             for (int j = 0; j < this.dimension; j++) {
-                if (board.getCells()[i][j].equals(cell)) {
-                    this.cells[i][j] = new Cell(piece, i, j);
-                    last = this.cells[i][j];
-                }
+                if (board.getCells()[i][j].equals(cell))
+                    this.cells[i][j] = new Cell(piece, this, i, j, Cell.CaptureType.NOT_CAPTURED);
                 else
-                    this.cells[i][j] = new Cell(board.getCells()[i][j].getPiece(), i, j);
+                    this.cells[i][j] = new Cell(board.getCells()[i][j].getPiece(), this, i, j, board.getCells()[i][j].getCapturedBy());
             }
         }
+        this.findCapturedCells();
     }
-
-
-    /**
-     * Check win for this board
-     */
-    public HashMap<Integer, Integer> checkWin(Dongtaoy player) {
-        int ownsideCaptured = 0;
-        int opponentCaptured = 0;
-        int isFinished = 1;
-
-        for (int i = 0; i < this.dimension; i++) {
-            for (int j = 0; j < this.dimension; j++) {
-                // if cell is captured
-                if (cells[i][j].getPiece() == Piece.DEAD) {
-                    // if the previous cell is captured
-                    if (cells[i][j - 1].getPiece() != Piece.DEAD)
-                        cells[i][j].setCapturedBy(cells[i][j - 1].getPiece());
-                    else
-                        cells[i][j].setCapturedBy(cells[i][j - 1].getCapturedBy());
-
-                    // increment counter
-                    if (cells[i][j].getCapturedBy() == player.getPiece())
-                        ownsideCaptured++;
-                    else
-                        opponentCaptured++;
-                } else if (cells[i][j].getPiece() == Piece.EMPTY) {
-                    // if there is any '+' in cell, game is not finished
-                    isFinished = 0;
-                }
-            }
-        }
-        // if finished print who wins or a draw
-//        if (isFinished)
-//            System.out.println(ownsideCaptured > opponentCaptured ? player.getPiece() :
-//                    (ownsideCaptured == opponentCaptured ? "Draw" : player.getOpponentPiece()));
-//        else
-        HashMap<Integer, Integer> result = new HashMap<>();
-        result.put(player.getPiece(), ownsideCaptured);
-        result.put(player.getOpponentPiece(), opponentCaptured);
-        result.put(-5, isFinished);
-        return result;
-    }
-
-
-
-    /**
-     * toString function for Board
-     *
-     * @return String representation of a board
-     */
-    public String toString() {
-        StringBuilder stringBuilder = new StringBuilder();
-        for (Cell[] row : this.cells) {
-            for (Cell c : row) {
-                stringBuilder.append(c);
-                stringBuilder.append(" ");
-            }
-            stringBuilder.append("\n");
-        }
-        return stringBuilder.toString();
-    }
-
-    public String statusToString() {
-        StringBuilder stringBuilder = new StringBuilder();
-        for (Cell[] row : this.cells) {
-            for (Cell c : row) {
-                stringBuilder.append(c.statusToString());
-                stringBuilder.append(" ");
-            }
-            stringBuilder.append("\n");
-        }
-        return stringBuilder.toString();
-    }
-
 
     public int placeCell(Move move) {
-        cells[move.Row][move.Col] = new Cell(move.P, move.Row, move.Col);
-        this.findCycle();
+        cells[move.Row][move.Col] = new Cell(move.P, this, move.Row, move.Col);
+        this.findCapturedCells();
         return 1;
     }
 
-    public void findCycle() {
+    public void findCapturedCells() {
+        HashSet<Cell.Direction> validDirection = new HashSet<Cell.Direction>() {{
+            add(Cell.Direction.TOPMIDDLE);
+            add(Cell.Direction.BOTTOMMIDDLE);
+            add(Cell.Direction.MIDDLELEFT);
+            add(Cell.Direction.MIDDLERIGHT);
+        }};
         for (int i = 1; i < this.dimension - 1; i++) {
             for (int j = 1; j < this.dimension - 1; j++) {
-
                 Cell currentCell = this.cells[i][j];
                 if (currentCell.getPiece() != Piece.DEAD) {
                     Integer[] array = new Integer[]{Piece.WHITE, Piece.BLACK, Piece.DEAD, Piece.EMPTY};
                     HashSet<Integer> validList = new HashSet<>(Arrays.asList(array));
                     HashSet<Cell> visited = new HashSet<>();
-
                     if (DEBUG) {
                         System.out.printf("\n\ncurrent: (%d, %d)\n", currentCell.getRow(), currentCell.getCol());
                     }
 
                     if (currentCell.getPiece() == Piece.EMPTY) {
-                        ArrayList<Cell> surroundedCells = getSurroundedCell(this.cells[i][j], new HashSet<Cell>(), validList);
+                        HashSet<Cell> surroundedCells = currentCell.getCellsBy(new HashSet<Cell>(), validList, validDirection);
                         boolean isBlack = false, isWhite = false;
                         if (DEBUG) {
                             System.out.println("Empty cell surrounded by: " + surroundedCells);
@@ -192,15 +136,20 @@ public class Board {
                             if (isWhite) {
                                 validList.remove(Piece.WHITE);
                             }
-                            if (!findPathToBorder(visited, currentCell, validList)) {
+                            if (!isOnBorder(dfs(visited, currentCell, validList, validDirection))) {
                                 for (Cell cell : visited) {
-                                    cell.setPiece(Piece.DEAD);
+                                    if(isBlack) {
+                                        cell.capturedBy(Piece.BLACK);
+                                    }else {
+                                        cell.capturedBy(Piece.WHITE);
+                                    }
                                 }
                             }
 
                         }
 
                     } else {
+                        int piece = currentCell.getPiece();
                         switch (this.cells[i][j].getPiece()) {
                             case Piece.BLACK:
                                 validList.remove(Piece.WHITE);
@@ -209,9 +158,13 @@ public class Board {
                                 validList.remove(Piece.BLACK);
                                 break;
                         }
-                        if (!findPathToBorder(visited, currentCell, validList)) {
+                        if (!isOnBorder(dfs(visited, currentCell, validList, validDirection))) {
                             for (Cell cell : visited) {
-                                cell.setPiece(Piece.DEAD);
+                                if(piece == Piece.WHITE) {
+                                    cell.capturedBy(Piece.BLACK);
+                                }else {
+                                    cell.capturedBy(Piece.WHITE);
+                                }
                             }
                         }
 
@@ -219,114 +172,73 @@ public class Board {
                 }
             }
         }
-
     }
 
-    private boolean findPathToBorder(HashSet<Cell> visited, Cell current, HashSet<Integer> validList) {
-        if (isOnBorder(current))
-            return true;
+
+    private HashSet<Cell> dfs(HashSet<Cell> visited, Cell current, HashSet<Integer> validList, HashSet<Cell.Direction> validDirection) {
+
         visited.add(current);
-        ArrayList<Cell> surroundedCells = this.getSurroundedCell(current, visited, validList);
+        HashSet<Cell> surroundedCells = current.getCellsBy(visited, validList, validDirection);
         if (DEBUG) {
             System.out.println("in findPathToBorder");
             System.out.println("\tcurrent" + current.getCoordinates() + ": " + current);
+            System.out.println("\tvalidList: " + validList);
+            System.out.println("\tvalidDirection: " + validDirection);
+            System.out.println("\tsurround: " + surroundedCells);
         }
-
+        if (surroundedCells.size() == 0) {
+            return visited;
+        }
         for (Cell cell : surroundedCells) {
-            if (findPathToBorder(visited, cell, validList))
-                return true;
+            visited.addAll(dfs(visited, cell, validList, validDirection));
         }
-        return false;
+        return visited;
     }
 
     private boolean isOnBorder(Collection<Cell> cells) {
         for (Cell cell : cells) {
-            if (isOnBorder(cell))
+            if (cell.isOnBorder())
                 return true;
         }
         return false;
     }
 
-    private boolean isOnBorder(Cell cell) {
-        if (cell.getRow() == 0 ||
-                cell.getRow() == (this.dimension - 1) ||
-                cell.getCol() == 0 ||
-                cell.getCol() == (this.dimension - 1))
-            return true;
-        return false;
+
+    /**
+     * evaluate current board position
+     *
+     * @param player player
+     * @return value
+     */
+    public double evaluate(Dongtaoy player) {
+        int playerCaptured = 0;
+        int opponentCaptured= 0;
+        for(int i = 0; i < this.dimension; i ++){
+            for(int j = 0 ; j < this.dimension; j ++){
+                Cell cell = this.cells[i][j];
+                if(cell.isCaptured(player.getPiece())) {
+                    playerCaptured++;
+                }
+                if(cell.isCaptured(player.getOpponentPiece())) {
+                    opponentCaptured++;
+                }
+            }
+        }
+        if(DEBUG) {
+            System.out.println("player captured: " + playerCaptured);
+            System.out.println("opponent captured: " + opponentCaptured);
+        }
+
+
+        return -1;
     }
 
-
-    private ArrayList<Cell> getSurroundedCell(Cell cell, HashSet<Cell> visited, HashSet<Integer> validList) {
-        ArrayList<Cell> cells = new ArrayList<>();
-        int row = cell.getRow();
-        int col = cell.getCol();
-
-        //TOP
-        if ((row - 1) >= 0)
-            if (validList.contains(this.cells[row - 1][col].getPiece()))
-                if (!visited.contains(this.cells[row - 1][col]))
-                    cells.add(this.cells[row - 1][col]);
-        //BOTTOM
-        if ((row + 1) < this.dimension)
-            if (validList.contains(this.cells[row + 1][col].getPiece()))
-                if (!visited.contains(this.cells[row + 1][col]))
-                    cells.add(this.cells[row + 1][col]);
-        //LEFT
-        if ((col - 1) >= 0)
-            if (validList.contains(this.cells[row][col - 1].getPiece()))
-                if (!visited.contains(this.cells[row][col - 1]))
-                    cells.add(this.cells[row][col - 1]);
-
-        //RIGHT
-        if ((col + 1) < this.dimension)
-            if (validList.contains(this.cells[row][col + 1].getPiece()))
-                if (!visited.contains(this.cells[row][col + 1]))
-                    cells.add(this.cells[row][col + 1]);
-
-
-        return cells;
-    }
-
-
-    public ArrayList<Cell> getEmptyCell() {
-        ArrayList<Cell> value = new ArrayList<>();
-        for (int i = 0; i < this.dimension; i++)
-            for (int j = 0; j < this.dimension; j++)
-                if (cells[i][j].isEmpty())
-                    value.add(cells[i][j]);
-        return value;
-    }
-
-    public Board verticalFlip() {
-        int[][] contents = new int[this.dimension][this.dimension];
-        for (int i = 0; i < this.dimension; i++)
-            for (int j = 0; j < this.dimension; j++)
-                contents[i][j] = this.cells[i][this.dimension - j - 1].getPiece();
-        return new Board(contents);
-    }
-
-    public Board horizontalFlip() {
-        int[][] contents = new int[this.dimension][this.dimension];
-        for (int i = 0; i < this.dimension; i++)
-            for (int j = 0; j < this.dimension; j++)
-                contents[i][j] = this.cells[this.dimension - i - 1][j].getPiece();
-        return new Board(contents);
-    }
-
-    public Board transposeDown() {
-        int[][] contents = new int[this.dimension][this.dimension];
-        for (int i = 0; i < this.dimension; i++)
-            for (int j = 0; j < this.dimension; j++)
-                contents[i][j] = this.cells[j][i].getPiece();
-        return new Board(contents);
-    }
-
-    public Board transposeUp() {
-        return this.transposeDown().horizontalFlip().verticalFlip();
-    }
-
-    public ArrayList<Cell> getAvailableCells() {
+    /**
+     * if board is symmetric return only cells that is different
+     *
+     * @return cells
+     */
+    public ArrayList<Cell> getSymmetricCells() {
         ArrayList<Cell> values = this.getEmptyCell();
         ArrayList<Cell> temp = new ArrayList<>();
         int x;
@@ -366,7 +278,74 @@ public class Board {
         return values;
     }
 
+    /**
+     * get all empty cell in current Board
+     *
+     * @return cells
+     */
+    public ArrayList<Cell> getEmptyCell() {
+        ArrayList<Cell> value = new ArrayList<>();
+        for (int i = 0; i < this.dimension; i++)
+            for (int j = 0; j < this.dimension; j++)
+                if (cells[i][j].isEmpty())
+                    value.add(cells[i][j]);
+        return value;
+    }
 
+
+    public Board verticalFlip() {
+        int[][] contents = new int[this.dimension][this.dimension];
+        for (int i = 0; i < this.dimension; i++)
+            for (int j = 0; j < this.dimension; j++)
+                contents[i][j] = this.cells[i][this.dimension - j - 1].getPiece();
+        return new Board(contents);
+    }
+
+    public Board horizontalFlip() {
+        int[][] contents = new int[this.dimension][this.dimension];
+        for (int i = 0; i < this.dimension; i++)
+            for (int j = 0; j < this.dimension; j++)
+                contents[i][j] = this.cells[this.dimension - i - 1][j].getPiece();
+        return new Board(contents);
+    }
+
+    public Board transposeDown() {
+        int[][] contents = new int[this.dimension][this.dimension];
+        for (int i = 0; i < this.dimension; i++)
+            for (int j = 0; j < this.dimension; j++)
+                contents[i][j] = this.cells[j][i].getPiece();
+        return new Board(contents);
+    }
+
+    public Board transposeUp() {
+        return this.transposeDown().horizontalFlip().verticalFlip();
+    }
+
+    /**
+     * getter function for dimension
+     *
+     * @return this.dimension
+     */
+    public int getDimension() {
+        return dimension;
+    }
+
+    /**
+     * getter function for cells
+     *
+     * @return Cell[][] this.cells
+     */
+    public Cell[][] getCells() {
+        return cells;
+    }
+
+
+    /**
+     * equals function for Board
+     *
+     * @param object
+     * @return boolean true or false
+     */
     public boolean equals(Object object) {
         Board board = (Board) object;
         for (int i = 0; i < this.dimension; i++)
@@ -376,133 +355,25 @@ public class Board {
         return true;
     }
 
-    public int evaluate(Dongtaoy player) {
-        //Find the minus for my side
-        this.findCycle();
-        HashSet<Cell> ownsideConnect = new HashSet<>();
-        HashSet<Cell> opponentConnect = new HashSet<>();
-        for (int i = 0; i < this.dimension; i++) {
-            for (int j = 0; j < this.dimension; j++) {
-                Cell currentCell = this.cells[i][j];
-
-                //Find empty border cell
-
-//                if (((i != 0) && (i != this.dimension - 1)) && ((j != 0) && (j != this.dimension - 1))) {
-////                    System.out.println(new StringBuilder().append(i).append(',').append(j).toString());
-//                    if (currentCell.getPiece() == Piece.EMPTY || currentCell.getPiece() == player.getPiece())
-//                        possibleCapture++;
-//                }
-
-                //Find the connectivity of each cell
-                HashMap<String, Cell> cellSet = this.getConnectedCell(currentCell);
-                if (player.getPiece() == currentCell.getPiece()) {
-                    for (Cell cell : cellSet.values())
-                        if (cell.getPiece() == Piece.EMPTY)
-                            ownsideConnect.add(cell);
-
-                } else if (player.getOpponentPiece() == currentCell.getPiece()) {
-                    for (Cell cell : cellSet.values())
-                        if (cell.getPiece() == Piece.EMPTY)
-                            opponentConnect.add(cell);
-                }
+    /**
+     * toString function for Board
+     *
+     * @return String representation of a board
+     */
+    public String toString() {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("board moves:\n");
+        for (Cell[] row : this.cells) {
+            for (Cell c : row) {
+                stringBuilder.append(c);
+                stringBuilder.append(" ");
             }
+            stringBuilder.append("\n");
         }
+        stringBuilder.append("\n");
 
-
-        HashMap<Integer, Integer> captureResult = this.checkWin(player);
-
-        return captureResult.get(player.getPiece()) - captureResult.get(player.getOpponentPiece());
-
-//          System.out.println(possibleCapture);
-
-//        if (DEBUG) {
-//            System.out.println("----EVALUATION FUNCTION DEBUG----");
-////        System.out.printf("Ownside's piece: %10s\n", player.getPiece());
-//            System.out.printf("Ownside's connectivity: %4d\n", ownsideConnect.size());
-//            System.out.printf("Opponent's connectivity: %3d\n", opponentConnect.size());
-//           System.out.printf("# of empty cell onBorder: %d\n", possibleCapture);
-//            System.out.printf("Ownside's capture point: %2d\n", captureResult.get(player.getPiece()));
-//            System.out.printf("Opponent's capture point: %d\n", captureResult.get(player.getOpponentPiece()));
-////        System.out.printf("Is game finished? %13s\n", (captureResult.get("IsFinished")==1?"TRUE":"FALSE"));
-//            System.out.println("---------------------------------");
-////        }
-//        System.out.println(captureResult);
-//        System.out.println(player.getPiece());
-//        System.out.println(player.getOpponentPiece());
-//
-//        System.out.println(captureResult.get(player.getPiece()) * 100 + captureResult.get(player.getOpponentPiece()) * 100);
-//        return captureResult.get(player.getPiece()) * 100 + captureResult.get(player.getOpponentPiece()) * 100;
-
-
-
-//        return value;
-    }
-
-    private HashMap<String, Cell> getConnectedCell(Cell currentCell) {
-        HashMap<String, Cell> cellSet = new HashMap<>();
-        int row = currentCell.getRow();
-        int col = currentCell.getCol();
-
-        // TopLeft
-        if (row - 1 >= 0 && col - 1 >= 0) {
-            cellSet.put("TopLeft", this.cells[row - 1][col - 1]);
-        }
-        //TopMiddle
-        if (row - 1 >= 0) {
-            cellSet.put("TopMiddle", this.cells[row - 1][col]);
-        }
-        //TopRight
-        if (row - 1 >= 0 && col + 1 < this.dimension) {
-            cellSet.put("TopRight", this.cells[row - 1][col + 1]);
-        }
-        //MiddleLeft
-        if (col - 1 >= 0) {
-            cellSet.put("MiddleLeft", this.cells[row][col - 1]);
-        }
-        //MiddleRight
-        if (col + 1 < this.dimension) {
-            cellSet.put("MiddleRight", this.cells[row][col + 1]);
-        }
-        //BottomLeft
-        if (row + 1 < this.dimension && col - 1 >= 0) {
-            cellSet.put("BottomLeft", this.cells[row + 1][col - 1]);
-        }
-        //BottomMiddle
-        if (row + 1 < this.dimension) {
-            cellSet.put("BottomMiddle", this.cells[row + 1][col]);
-        }
-        //BottomRight
-        if (row + 1 < this.dimension && col + 1 < this.dimension) {
-            cellSet.put("BottomRight", this.cells[row + 1][col + 1]);
-        }
-        return cellSet;
+        return stringBuilder.toString();
     }
 
 
-//        for (int i=0; i < this.dimension;i++){
-//            for (int j=0; j<this.dimension;j++){
-//                if(this.getCells()[i][j].getPiece() == Piece.EMPTY){
-//                    if(DEBUG){System.out.print(this.getCells()[i][j]);
-//                }else{
-//                    if(DEBUG){System.out.print(" ");
-//                }
-//            }
-//            if(DEBUG){System.out.print("\n");
-//        }
-    // Number of Piece with your player that connected with empty spot -> Increase Evaluation Value
-    // Number of Opponent piece associated with the empty spot -> Decrease Evaluation Value
-    // Boarder with less possible connection for next move -> Decrease Evaluation Value
-    // Occupy a piece on the empty piece after check with findLoop(), find the available "-" opportunity ->Increase Evaluation Value
-    //
-//        return 1;
-//    }
-
-
-    public int getDimension() {
-        return dimension;
-    }
-
-    public Cell[][] getCells() {
-        return cells;
-    }
 }
