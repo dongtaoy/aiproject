@@ -289,23 +289,26 @@ public class Board {
                                 add(Cell.Direction.BOTTOMRIGHT);
                             }});
                     visited.addAll(temp);
-                    if (cell.isPlayerCell(player)){
+                    if (cell.isPlayerCell(player)) {
                         playerChain++;
-                    } else if (cell.getPiece() == player.getOpponentPiece()){
+                    } else if (cell.getPiece() == player.getOpponentPiece()) {
                         opponentChain++;
                     }
                 }
-                HashMap<Cell.Direction, Cell> cellHashMap = cell.getEightConnectedCells();
-                if (cell.getPiece() == Piece.BLACK || cell.getPiece() == Piece.WHITE)
-                    for(Cell.Direction direction: Cell.Direction.values()){
-                        if (cellHashMap.containsKey(direction) && cellHashMap.get(direction).getPiece() == Piece.EMPTY){
-                            if (cell.isPlayerCell(player)){
+
+
+                if (cell.isColored()) {
+                    HashMap<Cell.Direction, Cell> cellHashMap = cell.getEightConnectedCells();
+                    for (Cell.Direction direction : Cell.Direction.values()) {
+                        if (cellHashMap.containsKey(direction) && cellHashMap.get(direction).isEmpty()) {
+                            if (cell.isPlayerCell(player)) {
                                 playerConnectivity.add(cellHashMap.get(direction));
-                            }else{
+                            } else {
                                 opponentConnectivity.add(cellHashMap.get(direction));
                             }
                         }
                     }
+                }
 
 
                 if (cell.isCaptured(player.getPiece())) {
@@ -316,7 +319,7 @@ public class Board {
                 }
             }
         }
-        if (DEBUG ) {
+        if (DEBUG) {
             System.out.println("player captured: " + playerCaptured);
             System.out.println("opponent captured: " + opponentCaptured);
 
@@ -334,9 +337,8 @@ public class Board {
 
         }
 
-        return 10 * playerCaptured + playerSafeCell.size() + (maxChain - playerChain) + playerConnectivity.size() * 3
-                - 10 * opponentCaptured - opponentSafeCell.size() - (maxChain - opponentChain)
-                - opponentConnectivity.size() * 3;
+        return 10 * playerCaptured + playerSafeCell.size() + (maxChain - playerChain) + playerConnectivity.size()
+                - 10 * opponentCaptured - opponentSafeCell.size() - (maxChain - opponentChain) - opponentConnectivity.size();
     }
 
 
