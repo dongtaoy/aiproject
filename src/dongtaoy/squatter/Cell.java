@@ -60,6 +60,10 @@ public class Cell {
         this.capturedBy = capturedBy;
     }
 
+    public void setPiece(int piece) {
+        this.piece = piece;
+    }
+
     public String toString() {
         switch (this.piece){
             case Piece.BLACK :
@@ -75,6 +79,7 @@ public class Cell {
                 return "-";
 
             case Piece.INVALID:
+
                 return "/";
             default:
                 return "ERROR";
