@@ -272,7 +272,7 @@ public class Board {
                         opponentCentralize += Math.min(i, (this.dimension) - i) + Math.min(j, (this.dimension) - j);
 
 
-                if (!visited.contains(cell)) {
+                if (cell.isColored() && !visited.contains(cell) ) {
                     HashSet<Cell> temp = dfs(new HashSet<Cell>(),
                             cell,
                             new HashSet<Integer>() {{
@@ -291,7 +291,7 @@ public class Board {
                     visited.addAll(temp);
                     if (cell.isPlayerCell(player)) {
                         playerChain++;
-                    } else if (cell.getPiece() == player.getOpponentPiece()) {
+                    } else {
                         opponentChain++;
                     }
                 }
@@ -337,8 +337,8 @@ public class Board {
 
         }
 
-        return 10 * playerCaptured + playerSafeCell.size() + (maxChain - playerChain) + playerConnectivity.size()
-                - 10 * opponentCaptured - opponentSafeCell.size() - (maxChain - opponentChain) - opponentConnectivity.size();
+        return 100 * playerCaptured + playerSafeCell.size() + 5*(maxChain - playerChain) + playerConnectivity.size()
+                - 100 * opponentCaptured - opponentSafeCell.size() - 5*(maxChain - opponentChain) - opponentConnectivity.size();
     }
 
 
