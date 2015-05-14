@@ -232,6 +232,9 @@ public class Board {
     public double evaluate(Dongtaoy player) {
         int playerCaptured = 0;
         int opponentCaptured = 0;
+        HashSet<Cell> visited = new HashSet<>();
+        int playerChain = 0;
+        int opponentChain = 0;
         HashSet<Cell> playerSafeCell = new HashSet<>();
         HashSet<Cell> opponentSafeCell = new HashSet<>();
         for (int i = 0; i < this.dimension; i++) {
@@ -255,6 +258,31 @@ public class Board {
                         opponentSafeCell.addAll(temp);
                 }
 
+                if (!visited.contains(cell)) {
+                    HashSet<Cell> temp = dfs(new HashSet<Cell>(),
+                            cell,
+                            new HashSet<Integer>() {{
+                                add(cell.getPiece());
+                            }},
+                            new HashSet<Cell.Direction>() {{
+                                add(Cell.Direction.TOPMIDDLE);
+                                add(Cell.Direction.BOTTOMMIDDLE);
+                                add(Cell.Direction.MIDDLELEFT);
+                                add(Cell.Direction.MIDDLERIGHT);
+                                add(Cell.Direction.TOPLEFT);
+                                add(Cell.Direction.TOPRIGHT);
+                                add(Cell.Direction.BOTTOMLEFT);
+                                add(Cell.Direction.BOTTOMRIGHT);
+                            }});
+                    visited.addAll(temp);
+//                    System.out.println(temp);
+                    if (cell.isPlayerCell(player))
+                        playerChain++;
+                    else if (cell.getPiece() == player.getOpponentPiece())
+                        opponentChain++;
+
+                }
+
 //
 
                 if (cell.isCaptured(player.getPiece())) {
@@ -272,8 +300,13 @@ public class Board {
             System.out.println("player Safe cell: " + playerSafeCell.size());
             System.out.println("opponent Safe cell: " + opponentSafeCell.size());
 
+            System.out.println("player chain: " + playerChain);
+            System.out.println("Opponent chain: " + opponentChain);
+
         }
-        return 10*playerCaptured + playerSafeCell.size() - 10*opponentCaptured - opponentSafeCell.size();
+        double maxChain = Math.pow(Math.ceil(this.dimension / 2), 2);
+        return 10 * playerCaptured + playerSafeCell.size() + (maxChain - playerChain)
+                - 10 * opponentCaptured - opponentSafeCell.size() - (maxChain - opponentChain);
     }
 
     private Pair<Integer, Integer> getNumOfSafeCell() {
