@@ -14,19 +14,21 @@ public class Test {
         player.init(6, Piece.BLACK);
 
         char[][] contents = {
-                {'+', 'W', '+', 'W', '+', '+'},
-                {'W', '+', '+', '+', 'W', '+'},
-                {'W', 'B', 'W', 'B', 'W', '+'},
-                {'W', '+', 'B', '+', 'W', '+'},
-                {'+', 'W', '+', 'W', '+', '+'},
-                {'+', '+', '+', '+', '+', '+'},
+                {'B', 'B', '+', '+', '+', '+'},
+                {'+', 'B', '+', '+', '+', '+'},
+                {'+', 'B', '+', '+', '+', 'W'},
+                {'+', 'W', '+', '+', '+', '+'},
+                {'+', 'W', '+', '+', '+', '+'},
+                {'+', 'W', '+', '+', '+', '+'},
         };
+//        player.makeMove();
         Board board = new Board(contents);
+//        board.
         board.evaluate(player);
-        System.out.println(board);
-        board.placeCell(new Move(Piece.WHITE, 4, 2));
-        board.evaluate(player);
-        System.out.println(board);
+//        System.out.println(board);
+//        board.placeCell(new Move(Piece.WHITE, 4, 2));
+//        board.evaluate(player);
+//        System.out.println(board);
 
 
 //        char[][] contents = {

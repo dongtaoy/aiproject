@@ -2,6 +2,7 @@ package dongtaoy.squatter;
 
 import aiproj.squatter.Move;
 import aiproj.squatter.Piece;
+import javafx.util.Pair;
 
 import java.util.*;
 
@@ -20,6 +21,7 @@ public class Board {
      * Create Board object
      * ONLY FOR TEST PURPOSE THIS FUNCTION MIGHT CRASH
      * !!! CAPTUREDBY IN CELL IS NOT INITIALIZED
+     *
      * @param contents board layout in char[][] format
      */
     public Board(char[][] contents) {
@@ -36,7 +38,7 @@ public class Board {
                     cells[i][j] = new Cell(Piece.EMPTY, this, i, j);
                 else if (contents[i][j] == '-')
                     cells[i][j] = new Cell(Piece.DEAD, this, i, j);
-        this.findCapturedCells();
+//        this.findCapturedCells();
 
     }
 
@@ -44,6 +46,7 @@ public class Board {
      * Create Board object
      * ONLY FOR TESTING SYMMETRIC BOARD OTHERWISE MIGHT CRASH
      * !!! CAPTUREDBY IN CELL IS NOT COPIED
+     *
      * @param contents
      */
     public Board(int[][] contents) {
@@ -53,7 +56,7 @@ public class Board {
         for (int i = 0; i < this.dimension; i++)
             for (int j = 0; j < this.dimension; j++)
                 cells[i][j] = new Cell(contents[i][j], this, i, j);
-        this.findCapturedCells();
+//        this.findCapturedCells();
     }
 
     /**
@@ -136,11 +139,11 @@ public class Board {
                             if (isWhite) {
                                 validList.remove(Piece.WHITE);
                             }
-                            if (!isOnBorder(dfs(visited, currentCell, validList, validDirection))) {
+                            if (!isEnclosed(visited, currentCell, validList, validDirection)) {
                                 for (Cell cell : visited) {
-                                    if(isBlack) {
+                                    if (isBlack) {
                                         cell.capturedBy(Piece.BLACK);
-                                    }else {
+                                    } else {
                                         cell.capturedBy(Piece.WHITE);
                                     }
                                 }
@@ -158,11 +161,11 @@ public class Board {
                                 validList.remove(Piece.BLACK);
                                 break;
                         }
-                        if (!isOnBorder(dfs(visited, currentCell, validList, validDirection))) {
+                        if (!isEnclosed(visited, currentCell, validList, validDirection)) {
                             for (Cell cell : visited) {
-                                if(piece == Piece.WHITE) {
+                                if (piece == Piece.WHITE) {
                                     cell.capturedBy(Piece.BLACK);
-                                }else {
+                                } else {
                                     cell.capturedBy(Piece.WHITE);
                                 }
                             }
@@ -174,9 +177,25 @@ public class Board {
         }
     }
 
+    private boolean isEnclosed(HashSet<Cell> visited, Cell current, HashSet<Integer> validList, HashSet<Cell.Direction> validDirection) {
+
+        if (current.isOnBorder())
+            return true;
+        visited.add(current);
+        Collection<Cell> surroundedCells = current.getCellsBy(visited, validList, validDirection);
+        if (DEBUG) {
+            System.out.println("in findPathToBorder");
+            System.out.println("\tcurrent" + current.getCoordinates() + ": " + current);
+        }
+
+        for (Cell cell : surroundedCells) {
+            if (isEnclosed(visited, cell, validList, validDirection))
+                return true;
+        }
+        return false;
+    }
 
     private HashSet<Cell> dfs(HashSet<Cell> visited, Cell current, HashSet<Integer> validList, HashSet<Cell.Direction> validDirection) {
-
         visited.add(current);
         HashSet<Cell> surroundedCells = current.getCellsBy(visited, validList, validDirection);
         if (DEBUG) {
@@ -212,25 +231,54 @@ public class Board {
      */
     public double evaluate(Dongtaoy player) {
         int playerCaptured = 0;
-        int opponentCaptured= 0;
-        for(int i = 0; i < this.dimension; i ++){
-            for(int j = 0 ; j < this.dimension; j ++){
-                Cell cell = this.cells[i][j];
-                if(cell.isCaptured(player.getPiece())) {
+        int opponentCaptured = 0;
+        HashSet<Cell> playerSafeCell = new HashSet<>();
+        HashSet<Cell> opponentSafeCell = new HashSet<>();
+        for (int i = 0; i < this.dimension; i++) {
+            for (int j = 0; j < this.dimension; j++) {
+                final Cell cell = this.cells[i][j];
+                if (cell.isOnBorder() && cell.isColored()) {
+                    HashSet<Cell> temp = dfs(new HashSet<Cell>(),
+                            cell,
+                            new HashSet<Integer>() {{
+                                add(cell.getPiece());
+                            }},
+                            new HashSet<Cell.Direction>() {{
+                                add(Cell.Direction.TOPMIDDLE);
+                                add(Cell.Direction.BOTTOMMIDDLE);
+                                add(Cell.Direction.MIDDLELEFT);
+                                add(Cell.Direction.MIDDLERIGHT);
+                            }});
+                    if (cell.isPlayerCell(player))
+                        playerSafeCell.addAll(temp);
+                    else
+                        opponentSafeCell.addAll(temp);
+                }
+
+//
+
+                if (cell.isCaptured(player.getPiece())) {
                     playerCaptured++;
                 }
-                if(cell.isCaptured(player.getOpponentPiece())) {
+                if (cell.isCaptured(player.getOpponentPiece())) {
                     opponentCaptured++;
                 }
             }
         }
-        if(DEBUG) {
+        if (DEBUG) {
             System.out.println("player captured: " + playerCaptured);
             System.out.println("opponent captured: " + opponentCaptured);
+
+            System.out.println("player Safe cell: " + playerSafeCell.size());
+            System.out.println("opponent Safe cell: " + opponentSafeCell.size());
+
         }
+        return 10*playerCaptured + playerSafeCell.size() - 10*opponentCaptured - opponentSafeCell.size();
+    }
 
+    private Pair<Integer, Integer> getNumOfSafeCell() {
 
-        return -1;
+        return new Pair<>(1, 1);
     }
 
     /**

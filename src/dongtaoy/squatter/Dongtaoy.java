@@ -14,7 +14,7 @@ public class Dongtaoy implements Player {
 
     private int piece;
     private Board board;
-    static final int depth = 2;
+    static final int depth = 5;
 
     public int init(int n, int piece) {
         this.board = new Board(n);

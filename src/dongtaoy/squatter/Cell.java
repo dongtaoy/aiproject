@@ -166,6 +166,30 @@ public class Cell {
         }
     }
 
+    public boolean isColored(){
+        if(this.getPiece() == Piece.BLACK
+                || this.getPiece() == Piece.WHITE)
+            return true;
+        return false;
+    }
+
+    public boolean isBlack(){
+        if(this.getPiece() == Piece.BLACK)
+            return true;
+        return false;
+    }
+
+    public boolean isWhite(){
+        if(this.getPiece() == Piece.WHITE)
+            return true;
+        return false;
+    }
+
+    public boolean isPlayerCell(Dongtaoy player){
+        if(this.getPiece() == player.getPiece())
+            return true;
+        return false;
+    }
 
     public boolean isOnBorder() {
         if (this.getRow() == 0 ||
