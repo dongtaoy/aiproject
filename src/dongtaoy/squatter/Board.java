@@ -322,10 +322,6 @@ public class Board {
                 - 10 * opponentCaptured - opponentSafeCell.size() - (maxChain - opponentChain);
     }
 
-    private Pair<Integer, Integer> getNumOfSafeCell() {
-
-        return new Pair<>(1, 1);
-    }
 
     /**
      * if board is symmetric return only cells that is different
