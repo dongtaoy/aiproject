@@ -16,7 +16,7 @@ public class Board {
     private int dimension;
     private Cell[][] cells;
     private boolean DEBUG = false;
-
+    private Cell last;
     /**
      * Create Board object
      * ONLY FOR TEST PURPOSE THIS FUNCTION MIGHT CRASH
@@ -87,8 +87,10 @@ public class Board {
         this.cells = new Cell[this.dimension][this.dimension];
         for (int i = 0; i < this.dimension; i++) {
             for (int j = 0; j < this.dimension; j++) {
-                if (board.getCells()[i][j].equals(cell))
+                if (board.getCells()[i][j].equals(cell)) {
                     this.cells[i][j] = new Cell(piece, this, i, j, Cell.CaptureType.NOT_CAPTURED);
+                    last = this.cells[i][j];
+                }
                 else
                     this.cells[i][j] = new Cell(board.getCells()[i][j].getPiece(), this, i, j, board.getCells()[i][j].getCapturedBy());
             }
@@ -234,6 +236,8 @@ public class Board {
         int opponentCaptured = 0;
         HashSet<Cell> playerSafeCell = new HashSet<>();
         HashSet<Cell> opponentSafeCell = new HashSet<>();
+        int playerCentralize = 0;
+        int opponentCentalize = 0;
         for (int i = 0; i < this.dimension; i++) {
             for (int j = 0; j < this.dimension; j++) {
                 final Cell cell = this.cells[i][j];
@@ -255,6 +259,14 @@ public class Board {
                         opponentSafeCell.addAll(temp);
                 }
 
+                if (cell.isColored())
+                    if (cell.isPlayerCell(player))
+                        playerCentralize += Math.min(i, (this.dimension) - i) + Math.min(j, (this.dimension) - j);
+                    else
+                        opponentCentalize += Math.min(i, (this.dimension) - i) + Math.min(j, (this.dimension) - j);
+
+
+
 //
 
                 if (cell.isCaptured(player.getPiece())) {
@@ -265,15 +277,19 @@ public class Board {
                 }
             }
         }
-        if (DEBUG) {
+        if (DEBUG ) {
             System.out.println("player captured: " + playerCaptured);
             System.out.println("opponent captured: " + opponentCaptured);
 
             System.out.println("player Safe cell: " + playerSafeCell.size());
             System.out.println("opponent Safe cell: " + opponentSafeCell.size());
 
+            System.out.println("last player centralize: " + playerCentralize);
+            System.out.println("last opponent centralize cell: " + opponentCentalize);
+
         }
-        return 10*playerCaptured + playerSafeCell.size() - 10*opponentCaptured - opponentSafeCell.size();
+        return 10 * playerCaptured + playerSafeCell.size() + playerCentralize
+                - 10 * opponentCaptured - opponentSafeCell.size() - opponentCentalize;
     }
 
     private Pair<Integer, Integer> getNumOfSafeCell() {
