@@ -16,7 +16,7 @@ public class Board {
     private int dimension;
     private Cell[][] cells;
     private boolean DEBUG = false;
-    private Cell last;
+
     /**
      * Create Board object
      * ONLY FOR TEST PURPOSE THIS FUNCTION MIGHT CRASH
@@ -87,10 +87,8 @@ public class Board {
         this.cells = new Cell[this.dimension][this.dimension];
         for (int i = 0; i < this.dimension; i++) {
             for (int j = 0; j < this.dimension; j++) {
-                if (board.getCells()[i][j].equals(cell)) {
+                if (board.getCells()[i][j].equals(cell))
                     this.cells[i][j] = new Cell(piece, this, i, j, Cell.CaptureType.NOT_CAPTURED);
-                    last = this.cells[i][j];
-                }
                 else
                     this.cells[i][j] = new Cell(board.getCells()[i][j].getPiece(), this, i, j, board.getCells()[i][j].getCapturedBy());
             }
@@ -234,6 +232,9 @@ public class Board {
     public double evaluate(Dongtaoy player) {
         int playerCaptured = 0;
         int opponentCaptured = 0;
+        HashSet<Cell> visited = new HashSet<>();
+        int playerChain = 0;
+        int opponentChain = 0;
         HashSet<Cell> playerSafeCell = new HashSet<>();
         HashSet<Cell> opponentSafeCell = new HashSet<>();
         int playerCentralize = 0;
@@ -267,6 +268,31 @@ public class Board {
 
 
 
+                if (!visited.contains(cell)) {
+                    HashSet<Cell> temp = dfs(new HashSet<Cell>(),
+                            cell,
+                            new HashSet<Integer>() {{
+                                add(cell.getPiece());
+                            }},
+                            new HashSet<Cell.Direction>() {{
+                                add(Cell.Direction.TOPMIDDLE);
+                                add(Cell.Direction.BOTTOMMIDDLE);
+                                add(Cell.Direction.MIDDLELEFT);
+                                add(Cell.Direction.MIDDLERIGHT);
+                                add(Cell.Direction.TOPLEFT);
+                                add(Cell.Direction.TOPRIGHT);
+                                add(Cell.Direction.BOTTOMLEFT);
+                                add(Cell.Direction.BOTTOMRIGHT);
+                            }});
+                    visited.addAll(temp);
+//                    System.out.println(temp);
+                    if (cell.isPlayerCell(player))
+                        playerChain++;
+                    else if (cell.getPiece() == player.getOpponentPiece())
+                        opponentChain++;
+
+                }
+
 //
 
                 if (cell.isCaptured(player.getPiece())) {
@@ -287,9 +313,13 @@ public class Board {
             System.out.println("last player centralize: " + playerCentralize);
             System.out.println("last opponent centralize cell: " + opponentCentalize);
 
+            System.out.println("player chain: " + playerChain);
+            System.out.println("Opponent chain: " + opponentChain);
+
         }
-        return 10 * playerCaptured + playerSafeCell.size() + playerCentralize
-                - 10 * opponentCaptured - opponentSafeCell.size() - opponentCentalize;
+        double maxChain = Math.pow(Math.ceil(this.dimension / 2), 2);
+        return 10 * playerCaptured + playerSafeCell.size() + (maxChain - playerChain)
+                - 10 * opponentCaptured - opponentSafeCell.size() - (maxChain - opponentChain);
     }
 
     private Pair<Integer, Integer> getNumOfSafeCell() {
