@@ -2,6 +2,7 @@ package dongtaoy.squatter;
 
 import aiproj.squatter.Move;
 import aiproj.squatter.Piece;
+import aiproj.squatter.Player;
 import javafx.util.Pair;
 
 import java.util.*;
@@ -230,16 +231,16 @@ public class Board {
      * @return value
      */
     public double evaluate(Dongtaoy player) {
-        int playerCaptured = 0;
-        int opponentCaptured = 0;
-        int playerChain = 0;
-        int opponentChain = 0;
-        int playerCentralize = 0;
-        int opponentCentralize = 0;
+        double playerCaptured = 0;
+        double opponentCaptured = 0;
+        double playerChain = 0;
+        double opponentChain = 0;
+        double playerCentralize = 0;
+        double opponentCentralize = 0;
         double maxChain = Math.pow(Math.ceil(this.dimension / 2), 2);
 
-        HashSet<Cell> playerConnectivity = new HashSet<>();
-        HashSet<Cell> opponentConnectivity = new HashSet<>();
+        ArrayList<Cell> playerConnectivity = new ArrayList<>();
+        ArrayList<Cell> opponentConnectivity = new ArrayList<>();
         HashSet<Cell> visited = new HashSet<>();
         HashSet<Cell> playerSafeCell = new HashSet<>();
         HashSet<Cell> opponentSafeCell = new HashSet<>();
@@ -272,7 +273,7 @@ public class Board {
                         opponentCentralize += Math.min(i, (this.dimension) - i) + Math.min(j, (this.dimension) - j);
 
 
-                if (cell.isColored() && !visited.contains(cell) ) {
+                if (cell.isColored() && !visited.contains(cell)) {
                     HashSet<Cell> temp = dfs(new HashSet<Cell>(),
                             cell,
                             new HashSet<Integer>() {{
@@ -297,18 +298,13 @@ public class Board {
                 }
 
 
-                if (cell.isColored()) {
-                    HashMap<Cell.Direction, Cell> cellHashMap = cell.getEightConnectedCells();
-                    for (Cell.Direction direction : Cell.Direction.values()) {
-                        if (cellHashMap.containsKey(direction) && cellHashMap.get(direction).isEmpty()) {
-                            if (cell.isPlayerCell(player)) {
-                                playerConnectivity.add(cellHashMap.get(direction));
-                            } else {
-                                opponentConnectivity.add(cellHashMap.get(direction));
-                            }
-                        }
-                    }
-                }
+//                if (cell.isColored()) {
+//                    HashMap<Cell.Direction, Cell> cellHashMap = cell.getEightConnectedCells();
+//                    for(Cell connected : cellHashMap.values()){
+//                        connected.isEmpty();
+//                        playerConnectivity.
+//                    }
+//                }
 
 
                 if (cell.isCaptured(player.getPiece())) {
@@ -319,28 +315,65 @@ public class Board {
                 }
             }
         }
-        if (DEBUG) {
-            System.out.println("player captured: " + playerCaptured);
-            System.out.println("opponent captured: " + opponentCaptured);
+//        if (DEBUG) {
+//            System.out.println("player captured: " + playerCaptured);
+//            System.out.println("opponent captured: " + opponentCaptured);
+//
+//            System.out.println("player Safe cell: " + playerSafeCell.size());
+//            System.out.println("opponent Safe cell: " + opponentSafeCell.size());
+//
+//            System.out.println("last player centralize: " + playerCentralize);
+//            System.out.println("last opponent centralize cell: " + opponentCentralize);
+//
+//            System.out.println("player chain: " + playerChain);
+//            System.out.println("Opponent chain: " + opponentChain);
+//
+//            System.out.println("player connectivity: " + playerConnectivity.size());
+//            System.out.println("Opponent connectivity: " + opponentConnectivity.size());
+//
+//        }
 
-            System.out.println("player Safe cell: " + playerSafeCell.size());
-            System.out.println("opponent Safe cell: " + opponentSafeCell.size());
+        ArrayList<Double> factors = new ArrayList<>();
+        factors.add(playerCaptured);
+        factors.add(1.0 * playerConnectivity.size());
+        factors.add(maxChain - playerChain);
+        factors.add(1.0 * playerSafeCell.size());
+        factors.add(playerCentralize);
 
-            System.out.println("last player centralize: " + playerCentralize);
-            System.out.println("last opponent centralize cell: " + opponentCentralize);
+        factors.add(opponentCaptured);
+        factors.add(1.0 * opponentConnectivity.size());
+        factors.add(maxChain - opponentChain);
+        factors.add(1.0 * opponentSafeCell.size());
+        factors.add(opponentCentralize);
 
-            System.out.println("player chain: " + playerChain);
-            System.out.println("Opponent chain: " + opponentChain);
+        double value = 0;
 
-            System.out.println("player connectivity: " + playerConnectivity.size());
-            System.out.println("Opponent connectivity: " + opponentConnectivity.size());
-
+        for (int i = 0; i < factors.size(); i++) {
+            value += player.getCoefficients().get(i) * factors.get(i);
         }
 
-        return 100 * playerCaptured + playerSafeCell.size() + 5*(maxChain - playerChain) + playerConnectivity.size()
-                - 100 * opponentCaptured - opponentSafeCell.size() - 5*(maxChain - opponentChain) - opponentConnectivity.size();
+        return value;
     }
 
+    public int testWin(Dongtaoy player) {
+        int playerCaptured = 0;
+        int opponentCaptured = 0;
+        for (int i = 0; i < this.dimension; i++) {
+            for (int j = 0; j < this.dimension; j++) {
+                if (this.cells[i][j].isEmpty()) {
+                    return Piece.EMPTY;
+                } else {
+                    if (this.cells[i][j].isCaptured(player.getPiece())) {
+                        playerCaptured++;
+                    } else if (this.cells[i][j].isCaptured(player.getOpponentPiece())) {
+                        opponentCaptured++;
+                    }
+                }
+            }
+        }
+        return playerCaptured > opponentCaptured ? player.getPiece() : (playerCaptured < opponentCaptured ?
+                player.getOpponentPiece() : Piece.EMPTY);
+    }
 
     /**
      * if board is symmetric return only cells that is different

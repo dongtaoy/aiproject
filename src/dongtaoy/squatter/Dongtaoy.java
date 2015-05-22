@@ -6,6 +6,7 @@ import aiproj.squatter.Player;
 import javafx.util.Pair;
 
 import java.io.PrintStream;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -14,11 +15,33 @@ public class Dongtaoy implements Player {
 
     private int piece;
     private Board board;
-    static final int depth = 4;
+    static final int depth = 3;
+    private ArrayList<Double> coefficients;
+
 
     public int init(int n, int piece) {
         this.board = new Board(n);
         this.piece = piece;
+        this.coefficients = new ArrayList<Double>(){{
+            add(100.0);
+            add(50.0);
+            add(20.0);
+            add(10.0);
+            add(5.0);
+            add(-100.0);
+            add(-50.0);
+            add(-20.0);
+            add(-10.0);
+            add(-5.0);
+        }};
+        return 0;
+    }
+
+    public int init(int n, int piece, ArrayList<Double> coefficients){
+        this.board = new Board(n);
+        this.piece = piece;
+        //[capture, connectivity, chain, safety cell, centralise]
+        this.coefficients = coefficients;
         return 0;
     }
 
@@ -28,6 +51,10 @@ public class Dongtaoy implements Player {
 
     public int getOpponentPiece() {
         return piece == Piece.BLACK ? Piece.WHITE : Piece.BLACK;
+    }
+
+    public ArrayList<Double> getCoefficients(){
+        return this.coefficients;
     }
 
     public Move makeMove() {
@@ -42,18 +69,7 @@ public class Dongtaoy implements Player {
     }
 
     public int getWinner() {
-//        HashMap<Integer, Integer> map = this.board.checkWin(this);
-//        if (map.get(-5) == 1) {
-//            if (map.get(this.getPiece()) > map.get(this.getOpponentPiece())) {
-//                return this.getPiece();
-//            } else if (map.get(this.getPiece()) == map.get(this.getOpponentPiece())) {
-//                return Piece.DEAD;
-//            } else {
-//                return this.getOpponentPiece();
-//            }
-//        }
-
-        return Piece.EMPTY;
+        return this.board.testWin(this);
     }
 
 
