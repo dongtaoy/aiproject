@@ -22,7 +22,7 @@ import operator
 
 COMPILE = "javac aiproj/squatter/*.java dongtaoy/squatter/*.java"
 
-INSTRUCT = "java aiproj/squatter/Referee 6 dongtaoy.squatter.Dongtaoy dongtaoy.squatter.Dongtaoy %s %s"
+INSTRUCT = "java -Xmx1032k aiproj/squatter/Referee 6 dongtaoy.squatter.Dongtaoy dongtaoy.squatter.Dongtaoy %s %s"
 
 def main():
 	Popen(COMPILE, shell=True)
