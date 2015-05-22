@@ -90,8 +90,7 @@ def get_winner(stdout):
 		if player != opponent:
 			raise Exception("Different winner!")
 		return  RESULT[player]
-	except e:
-		print e 
+	except:
 		sys.exit(1)
 
 
