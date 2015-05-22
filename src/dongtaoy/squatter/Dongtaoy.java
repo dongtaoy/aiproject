@@ -3,13 +3,10 @@ package dongtaoy.squatter;
 import aiproj.squatter.Move;
 import aiproj.squatter.Piece;
 import aiproj.squatter.Player;
-import javafx.util.Pair;
 
 import java.io.PrintStream;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.HashMap;
-
+import java.util.AbstractMap.SimpleEntry;
 
 public class Dongtaoy implements Player {
 
@@ -77,18 +74,20 @@ public class Dongtaoy implements Player {
         output.print(board);
     }
 
-    public Pair<Double, Cell> minimax(Board board, Cell move, int depth, Double alpha, Double beta, boolean isMax) {
+    public SimpleEntry<Double, Cell> minimax(Board board, Cell move, int depth, Double alpha, Double beta, boolean isMax) {
         ArrayList<Cell> symmetricCells = board.getSymmetricCells();
         if (depth == 0 || symmetricCells.size() == 0) {
-            return new Pair<>(board.evaluate(this), move);
+            return new SimpleEntry<>(board.evaluate(this), move);
         }
         if (isMax) {
-            Pair<Double, Cell> bestValue = new Pair<>(Double.NEGATIVE_INFINITY, move);
+            SimpleEntry<Double, Cell> bestValue = new SimpleEntry<>(Double.NEGATIVE_INFINITY, move);
             for (Cell cell : symmetricCells) {
-                Board newBoard = new Board(board, cell, this.piece);
-                Pair<Double, Cell> value = minimax(newBoard, cell, depth - 1, alpha, beta, false);
+//                Board newBoard = new Board(board, cell, this.piece);
+                Board newBoard = new Board(board);
+                newBoard.placeCell(new Move(this.piece, cell.getCol(), cell.getRow()));
+                SimpleEntry<Double, Cell> value = minimax(newBoard, cell, depth - 1, alpha, beta, false);
                 if (value.getKey() > bestValue.getKey()) {
-                    bestValue = new Pair<>(value.getKey(), cell);
+                    bestValue = new SimpleEntry<>(value.getKey(), cell);
                     if (bestValue.getKey() > alpha)
                         alpha = bestValue.getKey();
                     if (beta <= alpha)
@@ -97,12 +96,14 @@ public class Dongtaoy implements Player {
             }
             return bestValue;
         } else {
-            Pair<Double, Cell> bestValue = new Pair<>(Double.POSITIVE_INFINITY, move);
+            SimpleEntry<Double, Cell> bestValue = new SimpleEntry<>(Double.POSITIVE_INFINITY, move);
             for (Cell cell : symmetricCells) {
-                Board newBoard = new Board(board, cell, this.getOpponentPiece());
-                Pair<Double, Cell> value = minimax(newBoard, cell, depth - 1, alpha, beta, true);
+//                Board newBoard = new Board(board, cell, this.getOpponentPiece());
+                Board newBoard = new Board(board);
+                newBoard.placeCell(new Move(this.getOpponentPiece(), cell.getCol(), cell.getRow()));
+                SimpleEntry<Double, Cell> value = minimax(newBoard, cell, depth - 1, alpha, beta, true);
                 if (value.getKey() < bestValue.getKey()) {
-                    bestValue = new Pair<>(value.getKey(), cell);
+                    bestValue = new SimpleEntry<>(value.getKey(), cell);
                     if (bestValue.getKey() < beta)
                         beta = bestValue.getKey();
                     if (beta <= alpha)
