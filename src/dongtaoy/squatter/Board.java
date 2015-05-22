@@ -357,11 +357,11 @@ public class Board {
         factors.add(maxChain - playerChain);
         factors.add(1.0 * playerSafeCell.size());
         factors.add(playerCentralize/moves);
-        factors.add(opponentCaptured);
-        factors.add(1.0 * opponentConnectivity.size());
-        factors.add(maxChain - opponentChain);
-        factors.add(1.0 * opponentSafeCell.size());
-        factors.add(opponentCentralize / moves);
+        factors.add(-1.0 * opponentCaptured);
+        factors.add(-1.0 * opponentConnectivity.size());
+        factors.add(opponentChain - maxChain);
+        factors.add(-1.0 * opponentSafeCell.size());
+        factors.add(-1.0 * opponentCentralize / moves);
 
         double value = 0;
         for (int i = 0; i < factors.size(); i++) {

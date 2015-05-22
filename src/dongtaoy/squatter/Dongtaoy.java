@@ -12,7 +12,7 @@ public class Dongtaoy implements Player {
 
     private int piece;
     private Board board;
-    static final int depth = 1;
+    static final int depth = 4;
     private ArrayList<Double> coefficients;
 
 
