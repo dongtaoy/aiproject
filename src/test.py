@@ -14,7 +14,7 @@ INIT_COE = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
 
 
- 
+from multiprocessing.pool import ThreadPool
 from subprocess import Popen, PIPE
 import re
 import sys
@@ -34,12 +34,20 @@ def main():
 			for i in range(0, MARGIN + 1, STEP):
 				dic2 = {"WHITE": 0, "BLACK": 0, "DRAW": 0}
 				p1_coe[factor] = i
+				pool = ThreadPool(processes=MARGIN/5+1)
+				results=[]
 				for j in range(0, MARGIN + 1, STEP):
 					p2_coe[factor] = j
-					dic2[get_result(p1_coe, p2_coe)] += 1;
-					print p1_coe
+					print "Running:"
 					print p2_coe
-					print
+					results.append(pool.apply_async(get_result,(list(p1_coe), list(p2_coe))))
+					# dic2[get_result(p1_coe, p2_coe)] += 1;
+					# print p1_coe
+					# print p2_coe
+					# print
+				for result in results:
+					dic2[result.get()] += 1;
+				print dic2
 				dic1[i] = dic2["WHITE"] * 3 + dic2["DRAW"] - dic2["BLACK"]
 			print dic1
 			print
@@ -67,7 +75,6 @@ def get_result(p1_coe, p2_coe):
 	init_arg = reduce(lambda a,b:str(a) + ' ' + str(b),INIT_COE)
 	process = Popen(INSTRUCT % (p1_arg,p2_arg) , stdout=PIPE, shell=True)
 	stdout, stderr = process.communicate()
-	print stdout
 	return get_winner(stdout)
 	 
 
