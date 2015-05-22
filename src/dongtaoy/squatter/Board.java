@@ -361,10 +361,9 @@ public class Board {
         factors.add(1.0 * opponentConnectivity.size());
         factors.add(maxChain - opponentChain);
         factors.add(1.0 * opponentSafeCell.size());
-        factors.add(opponentCentralize/moves);
+        factors.add(opponentCentralize / moves);
 
         double value = 0;
-
         for (int i = 0; i < factors.size(); i++) {
             value += player.getCoefficients().get(i) * factors.get(i);
         }

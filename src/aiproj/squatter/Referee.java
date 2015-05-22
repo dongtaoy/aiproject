@@ -1,6 +1,8 @@
 package aiproj.squatter;
 
 import dongtaoy.squatter.*;
+
+import java.util.ArrayList;
 /*   
  *   Referee:
  *      A mediator between two players. It is responsible to initialize 
@@ -34,9 +36,34 @@ public class Referee implements Piece {
             System.exit(1);
         }
 
-        P1.init(Integer.valueOf(args[0]), WHITE);
-        P2.init(Integer.valueOf(args[0]), BLACK);
+        ArrayList<Double> player_coefficients = new ArrayList<>();
+        player_coefficients.add(Double.parseDouble(args[3]));
+        player_coefficients.add(Double.parseDouble(args[4]));
+        player_coefficients.add(Double.parseDouble(args[5]));
+        player_coefficients.add(Double.parseDouble(args[6]));
+        player_coefficients.add(Double.parseDouble(args[7]));
+        player_coefficients.add(Double.parseDouble(args[8]));
+        player_coefficients.add(Double.parseDouble(args[9]));
+        player_coefficients.add(Double.parseDouble(args[10]));
+        player_coefficients.add(Double.parseDouble(args[11]));
+        player_coefficients.add(Double.parseDouble(args[12]));
 
+        ArrayList<Double> opponent_coefficients = new ArrayList<>();
+        opponent_coefficients.add(Double.parseDouble(args[13]));
+        opponent_coefficients.add(Double.parseDouble(args[14]));
+        opponent_coefficients.add(Double.parseDouble(args[15]));
+        opponent_coefficients.add(Double.parseDouble(args[16]));
+        opponent_coefficients.add(Double.parseDouble(args[17]));
+        opponent_coefficients.add(Double.parseDouble(args[18]));
+        opponent_coefficients.add(Double.parseDouble(args[19]));
+        opponent_coefficients.add(Double.parseDouble(args[20]));
+        opponent_coefficients.add(Double.parseDouble(args[21]));
+        opponent_coefficients.add(Double.parseDouble(args[22]));
+
+
+
+        P1.init(Integer.valueOf(args[0]), WHITE, player_coefficients);
+        P2.init(Integer.valueOf(args[0]), BLACK, opponent_coefficients);
 
         while (boardEmptyPieces > 0 && P1.getWinner() == 0 && P2.getWinner() == 0) {
 

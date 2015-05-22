@@ -12,25 +12,25 @@ public class Dongtaoy implements Player {
 
     private int piece;
     private Board board;
-    static final int depth = 3;
+    static final int depth = 1;
     private ArrayList<Double> coefficients;
 
 
     public int init(int n, int piece) {
         this.board = new Board(n);
         this.piece = piece;
-        this.coefficients = new ArrayList<Double>(){{
-            add(100.0);
-            add(50.0);
-            add(20.0);
-            add(10.0);
-            add(5.0);
-            add(-100.0);
-            add(-50.0);
-            add(-20.0);
-            add(-10.0);
-            add(-5.0);
-        }};
+//        this.coefficients = new ArrayList<Double>(){{
+//            add(100.0);
+//            add(50.0);
+//            add(20.0);
+//            add(10.0);
+//            add(5.0);
+//            add(-100.0);
+//            add(-50.0);
+//            add(-20.0);
+//            add(-10.0);
+//            add(-5.0);
+//        }};
         return 0;
     }
 
