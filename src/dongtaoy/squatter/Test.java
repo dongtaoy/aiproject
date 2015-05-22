@@ -7,24 +7,30 @@ package dongtaoy.squatter;
 import aiproj.squatter.Move;
 import aiproj.squatter.Piece;
 
+import java.util.Random;
+
 public class Test {
 
     public static void main(String[] args) {
-        Dongtaoy player = new Dongtaoy();
-        player.init(6, Piece.BLACK);
 
-        char[][] contents = {
-                {'+', 'B', '+', '+', '+', '+'},
-                {'+', 'B', '+', '+', '+', '+'},
-                {'+', 'B', 'B', 'W', '+', 'W'},
-                {'+', 'W', 'W', '+', 'W', '+'},
-                {'+', 'W', '+', '+', 'B', '+'},
-                {'+', 'W', '+', '+', '+', '+'},
-        };
-//        player.makeMove();
-        Board board = new Board(contents);
-//        board.
-        board.evaluate(player);
+        Random r = new Random();
+//        double x = r.nextDouble(500.0);
+//        System.out.printf("%f\n",x);
+//        Dongtaoy player = new Dongtaoy();
+//        player.init(6, Piece.BLACK);
+//
+//        char[][] contents = {
+//                {'+', 'B', '+', '+', '+', '+'},
+//                {'+', 'B', '+', '+', '+', '+'},
+//                {'+', 'B', 'B', 'W', '+', 'W'},
+//                {'+', 'W', 'W', '+', 'W', '+'},
+//                {'+', 'W', '+', '+', 'B', '+'},
+//                {'+', 'W', '+', '+', '+', '+'},
+//        };
+////        player.makeMove();
+//        Board board = new Board(contents);
+////        board.
+//        board.evaluate(player);
 //        System.out.println(board);
 //        board.placeCell(new Move(Piece.WHITE, 4, 2));
 //        board.evaluate(player);

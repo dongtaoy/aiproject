@@ -1,6 +1,7 @@
 package aiproj.squatter;
 
 import java.io.PrintStream;
+import java.util.ArrayList;
 
 /*   
  *   Player Interface:
@@ -15,6 +16,8 @@ public interface Player{
 	 */
 	
 	public int init(int n, int p);
+
+	public int init(int n, int p, ArrayList<Double> coefficients);
 	
 	/* Function called by referee to request a move by the player.
 	 *  Return object of class Move
