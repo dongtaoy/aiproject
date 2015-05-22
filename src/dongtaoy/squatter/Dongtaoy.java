@@ -55,6 +55,11 @@ public class Dongtaoy implements Player {
     }
 
     public Move makeMove() {
+        if(board.getMoves() == 0){
+            Move move = new Move(this.piece,  board.getDimension()/2-1, board.getDimension()/2-1);
+            board.placeCell(move);
+            return move;
+        }
         Cell cell = minimax(board, null, depth, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, true).getValue();
         Move move = new Move(this.piece, cell.getRow(), cell.getCol());
         board.placeCell(move);

@@ -103,6 +103,7 @@ public class Board {
     }
 
     public void findCapturedCells() {
+        HashSet<Cell> notEnclosed = new HashSet<>();
         HashSet<Cell.Direction> validDirection = new HashSet<Cell.Direction>() {{
             add(Cell.Direction.TOPMIDDLE);
             add(Cell.Direction.BOTTOMMIDDLE);
@@ -112,7 +113,7 @@ public class Board {
         for (int i = 1; i < this.dimension - 1; i++) {
             for (int j = 1; j < this.dimension - 1; j++) {
                 Cell currentCell = this.cells[i][j];
-                if (currentCell.getPiece() != Piece.DEAD) {
+                if (currentCell.getPiece() != Piece.DEAD && !notEnclosed.contains(currentCell)) {
                     Integer[] array = new Integer[]{Piece.WHITE, Piece.BLACK, Piece.DEAD, Piece.EMPTY};
                     HashSet<Integer> validList = new HashSet<>(Arrays.asList(array));
                     HashSet<Cell> visited = new HashSet<>();
@@ -120,8 +121,8 @@ public class Board {
                         System.out.printf("\n\ncurrent: (%d, %d)\n", currentCell.getRow(), currentCell.getCol());
                     }
 
-                    if (currentCell.getPiece() == Piece.EMPTY) {
-                        HashSet<Cell> surroundedCells = currentCell.getCellsBy(new HashSet<Cell>(), validList, validDirection);
+                    if (currentCell.isEmpty()) {
+                        HashSet<Cell> surroundedCells = currentCell.getCellsBy(new HashSet<>(), validList, validDirection);
                         boolean isBlack = false, isWhite = false;
                         if (DEBUG) {
                             System.out.println("Empty cell surrounded by: " + surroundedCells);
@@ -131,6 +132,9 @@ public class Board {
                                 isBlack = true;
                             if (cell.getPiece() == Piece.WHITE)
                                 isWhite = true;
+                            // performance
+                            if(isBlack&&isWhite)
+                                break;
                         }
                         if (!(isBlack && isWhite)) {
                             if (isBlack) {
@@ -147,6 +151,8 @@ public class Board {
                                         cell.capturedBy(Piece.WHITE);
                                     }
                                 }
+                            }else{
+                                notEnclosed.addAll(visited);
                             }
 
                         }
@@ -169,6 +175,8 @@ public class Board {
                                     cell.capturedBy(Piece.WHITE);
                                 }
                             }
+                        }else{
+                            notEnclosed.addAll(visited);
                         }
 
                     }
@@ -236,7 +244,6 @@ public class Board {
         double opponentChain = 0;
         double playerCentralize = 0;
         double opponentCentralize = 0;
-        double totalMoves = 0;
         double maxChain = Math.pow(Math.ceil(this.dimension / 2), 2);
 
         HashSet<Cell> playerConnectivity = new HashSet<>();
@@ -249,72 +256,75 @@ public class Board {
             for (int j = 0; j < this.dimension; j++) {
                 
                 final Cell cell = this.cells[i][j];
-                if (cell.isOnBorder() && cell.isColored()) {
-                    HashSet<Cell> temp = dfs(new HashSet<Cell>(),
-                            cell,
-                            new HashSet<Integer>() {{
-                                add(cell.getPiece());
-                            }},
-                            new HashSet<Cell.Direction>() {{
-                                add(Cell.Direction.TOPMIDDLE);
-                                add(Cell.Direction.BOTTOMMIDDLE);
-                                add(Cell.Direction.MIDDLELEFT);
-                                add(Cell.Direction.MIDDLERIGHT);
-                            }});
-                    if (cell.isPlayerCell(player))
-                        playerSafeCell.addAll(temp);
-                    else
-                        opponentSafeCell.addAll(temp);
-                }
 
-                if (cell.isColored())
-                    if (cell.isPlayerCell(player))
-                        playerCentralize += Math.min(i, (this.dimension) - i) + Math.min(j, (this.dimension) - j);
-                    else
-                        opponentCentralize += Math.min(i, (this.dimension) - i) + Math.min(j, (this.dimension) - j);
+                //find safe cells
+               if (cell.isOnBorder() && cell.isColored()) {
+                   HashSet<Cell> temp = dfs(new HashSet<>(),
+                           cell,
+                           new HashSet<Integer>() {{
+                               add(cell.getPiece());
+                           }},
+                           new HashSet<Cell.Direction>() {{
+                               add(Cell.Direction.TOPMIDDLE);
+                               add(Cell.Direction.BOTTOMMIDDLE);
+                               add(Cell.Direction.MIDDLELEFT);
+                               add(Cell.Direction.MIDDLERIGHT);
+                           }});
+                   if (cell.isPlayerCell(player))
+                       playerSafeCell.addAll(temp);
+                   else
+                       opponentSafeCell.addAll(temp);
+               }
 
-
-                if (cell.isColored() && !visited.contains(cell)) {
-                    HashSet<Cell> temp = dfs(new HashSet<Cell>(),
-                            cell,
-                            new HashSet<Integer>() {{
-                                add(cell.getPiece());
-                            }},
-                            new HashSet<Cell.Direction>() {{
-                                add(Cell.Direction.TOPMIDDLE);
-                                add(Cell.Direction.BOTTOMMIDDLE);
-                                add(Cell.Direction.MIDDLELEFT);
-                                add(Cell.Direction.MIDDLERIGHT);
-                                add(Cell.Direction.TOPLEFT);
-                                add(Cell.Direction.TOPRIGHT);
-                                add(Cell.Direction.BOTTOMLEFT);
-                                add(Cell.Direction.BOTTOMRIGHT);
-                            }});
-                    visited.addAll(temp);
-                    if (cell.isPlayerCell(player)) {
-                        playerChain++;
-                    } else {
-                        opponentChain++;
-                    }
-                }
+                // find if cell is centralized
+               if (cell.isColored())
+                   if (cell.isPlayerCell(player))
+                       playerCentralize += Math.min(i, (this.dimension) - i) + Math.min(j, (this.dimension) - j);
+                   else
+                       opponentCentralize += Math.min(i, (this.dimension) - i) + Math.min(j, (this.dimension) - j);
 
 
-                if (cell.isColored()) {
-                    HashMap<Cell.Direction, Cell> cellHashMap = cell.getEightConnectedCells();
-                    for (Cell connected : cellHashMap.values()) {
-                        if(connected.isEmpty()){
-                            if(cell.isPlayerCell(player)){
-                                playerConnectivity.add(connected);
-                            }else{
-                                opponentConnectivity.add(connected);
-                            }
-                        }
+                //find how many chains
+               if (cell.isColored() && !visited.contains(cell)) {
+                   HashSet<Cell> temp = dfs(new HashSet<>(),
+                           cell,
+                           new HashSet<Integer>() {{
+                               add(cell.getPiece());
+                           }},
+                           new HashSet<Cell.Direction>() {{
+                               add(Cell.Direction.TOPMIDDLE);
+                               add(Cell.Direction.BOTTOMMIDDLE);
+                               add(Cell.Direction.MIDDLELEFT);
+                               add(Cell.Direction.MIDDLERIGHT);
+                               add(Cell.Direction.TOPLEFT);
+                               add(Cell.Direction.TOPRIGHT);
+                               add(Cell.Direction.BOTTOMLEFT);
+                               add(Cell.Direction.BOTTOMRIGHT);
+                           }});
+                   visited.addAll(temp);
+                   if (cell.isPlayerCell(player)) {
+                       playerChain++;
+                   } else {
+                       opponentChain++;
+                   }
+               }
+
+                 // find connectivity to empty cell
+                 if (cell.isColored()) {
+                     HashMap<Cell.Direction, Cell> cellHashMap = cell.getEightConnectedCells();
+                     for (Cell connected : cellHashMap.values()) {
+                         if(connected.isEmpty()){
+                             if(cell.isPlayerCell(player)){
+                                 playerConnectivity.add(connected);
+                             }else{
+                                 opponentConnectivity.add(connected);
+                             }
+                         }
+                     }
+                 }
 
 
-                    }
-                }
-
-
+                //find captured cell
                 if (cell.isCaptured(player.getPiece())) {
                     playerCaptured++;
                 }
@@ -379,7 +389,7 @@ public class Board {
             }
         }
         return playerCaptured > opponentCaptured ? player.getPiece() : (playerCaptured < opponentCaptured ?
-                player.getOpponentPiece() : Piece.EMPTY);
+                player.getOpponentPiece() : Piece.DEAD);
     }
 
     /**
